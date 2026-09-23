@@ -14,10 +14,10 @@ export async function Header() {
 
   return (
     <header>
-      <div className="utility">{config.brand.utility}</div>
+      <div className="utility" data-editor="brand.utility">{config.brand.utility}</div>
       <div className="masthead shell">
-        <Link href="/" className="wordmark" style={style}>{config.brand.wordmark}</Link>
-        <span className="signature">{config.brand.signature}</span>
+        <Link href="/" className="wordmark" style={style} data-editor="brand.wordmark">{config.brand.wordmark}</Link>
+        <span className="signature" data-editor="brand.signature">{config.brand.signature}</span>
       </div>
       <nav className="nav">
         <div className="shell navInner">
@@ -39,7 +39,7 @@ export async function Footer() {
       <div className="shell footerGrid">
         <div>
           <div className="footerBrand">LETÍCIA LEITE</div>
-          <p>{config.footer.description}</p>
+          <p data-editor="footer.description">{config.footer.description}</p>
         </div>
         <div><strong>Explorar</strong><Link href="/moda">Moda</Link><Link href="/beleza">Beleza</Link><Link href="/lifestyle">Lifestyle</Link><Link href="/achados">Achados</Link></div>
         <div><strong>Contato</strong><Link href="/ugc">UGC</Link><a href="mailto:leticialeitecontent@gmail.com">E-mail</a><a href="https://instagram.com/leticiafndg" target="_blank" rel="noreferrer">Instagram</a></div>
@@ -65,22 +65,22 @@ function MediaContent({ asset, alt }: { asset: MediaAsset; alt: string }) {
   return <img src={asset.url} alt={alt} style={style} />;
 }
 
-export function Visual({ kind = "rose", label = "editorial", asset }: { kind?: string; label?: string; asset?: MediaAsset }) {
+export function Visual({ kind = "rose", label = "editorial", asset, editorKey }: { kind?: string; label?: string; asset?: MediaAsset; editorKey?: string }) {
   if (asset?.url) {
-    return <div className={(kind === "hero" ? "heroPhotoFrame" : "visual mediaVisual " + kind)}>
+    return <div data-editor-media={editorKey} className={(kind === "hero" ? "heroPhotoFrame" : "visual mediaVisual " + kind)}>
       <MediaContent asset={asset} alt={label} />
     </div>;
   }
 
   if (kind === "hero") {
     return (
-      <div className="heroPhotoFrame">
+      <div data-editor-media={editorKey} className="heroPhotoFrame">
         <img className="heroPhoto" src="/images/leticia-hero.jpg" alt="Letícia Leite em editorial de moda" />
       </div>
     );
   }
 
-  return <div className={"visual " + kind}><span>{label}</span></div>;
+  return <div data-editor-media={editorKey} className={"visual " + kind}><span>{label}</span></div>;
 }
 
 export function Card({ article, compact = false }: { article: Article; compact?: boolean }) {
@@ -95,12 +95,15 @@ export function Card({ article, compact = false }: { article: Article; compact?:
   );
 }
 
-export function Newsletter({ eyebrow = "Carta da Letícia", title = "Moda, beleza e achados para chegar sem ruído.", eyebrowStyle, titleStyle }: {
-  eyebrow?: string; title?: string; eyebrowStyle?: CSSProperties; titleStyle?: CSSProperties;
+export function Newsletter({ eyebrow = "Carta da Letícia", title = "Moda, beleza e achados para chegar sem ruído.", eyebrowStyle, titleStyle, editorPrefix }: {
+  eyebrow?: string; title?: string; eyebrowStyle?: CSSProperties; titleStyle?: CSSProperties; editorPrefix?: string;
 }) {
   return (
     <section className="newsletter shell">
-      <div><p className="eyebrow" style={eyebrowStyle}>{eyebrow}</p><h2 style={titleStyle}>{title}</h2></div>
+      <div>
+        <p className="eyebrow" style={eyebrowStyle} data-editor={editorPrefix ? `${editorPrefix}.eyebrow` : undefined}>{eyebrow}</p>
+        <h2 style={titleStyle} data-editor={editorPrefix ? `${editorPrefix}.title` : undefined}>{title}</h2>
+      </div>
       <form><input aria-label="Seu e-mail" type="email" placeholder="seu@email.com" /><button type="button">Quero receber</button></form>
     </section>
   );

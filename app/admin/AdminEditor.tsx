@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { MediaAsset, SiteConfig, TextStyle } from "@/lib/site-config";
 
 const fonts = ["Georgia", "Times New Roman", "Arial", "Verdana", "Trebuchet MS", "Garamond", "Courier New"];
@@ -128,6 +128,10 @@ export default function AdminEditor() {
   const [tab, setTab] = useState("hero");
   const [status, setStatus] = useState("Carregando...");
   const [saving, setSaving] = useState(false);
+  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
+  const [previewScale, setPreviewScale] = useState(1);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const previewHostRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch("/api/site-config", { cache: "no-store" })
@@ -135,6 +139,28 @@ export default function AdminEditor() {
       .then(data => { setConfig(data); setStatus("Pronto para editar."); })
       .catch(() => setStatus("Não foi possível carregar a configuração."));
   }, []);
+
+  useEffect(() => {
+    const host = previewHostRef.current;
+    if (!host) return;
+
+    const observer = new ResizeObserver(() => {
+      const targetWidth = previewMode === "desktop" ? 1440 : 390;
+      const available = Math.max(280, host.clientWidth - 20);
+      setPreviewScale(Math.min(1, available / targetWidth));
+    });
+
+    observer.observe(host);
+    return () => observer.disconnect();
+  }, [previewMode]);
+
+  useEffect(() => {
+    if (!config) return;
+    iframeRef.current?.contentWindow?.postMessage(
+      { type: "LETICIA_EDITOR_PREVIEW", config },
+      window.location.origin
+    );
+  }, [config]);
 
   const tabs = useMemo(() => [
     ["marca", "Marca"], ["hero", "Destaque"], ["lookbook", "Looks"], ["beauty", "Beleza"],
@@ -256,53 +282,37 @@ export default function AdminEditor() {
     </aside>
 
     <main className="adminPreview">
+      <div className="adminPreviewToolbar">
+        <div>
+          <strong>Prévia real do site</strong>
+          <span>Mesma página, mesmos componentes e mesmo CSS do público.</span>
+        </div>
+        <div className="previewModeButtons">
+          <button className={previewMode === "desktop" ? "active" : ""} onClick={() => setPreviewMode("desktop")}>Desktop</button>
+          <button className={previewMode === "mobile" ? "active" : ""} onClick={() => setPreviewMode("mobile")}>Celular</button>
+        </div>
+      </div>
       <div className="previewBrowser">
-        <div className="previewBar"><i /><i /><i /><span>Prévia ao vivo</span></div>
-        <div className="previewSite">
-          <div className="previewUtility">{config.brand.utility}</div>
-          <div className="previewBrand" style={textPreview(config.brand.wordmarkStyle)}>{config.brand.wordmark}</div>
-          <div className="previewSignature">{config.brand.signature}</div>
-
-          <section className="previewHero">
-            <div className="previewMedia tall"><MediaPreview asset={h.hero.media} fallback="/images/leticia-hero.jpg" /></div>
-            <div>
-              <div className="previewEyebrow" style={textPreview(h.hero.eyebrowStyle)}>{h.hero.eyebrow}</div>
-              <h2 style={textPreview(h.hero.titleStyle)}>{h.hero.title}</h2>
-              <p style={textPreview(h.hero.dekStyle)}>{h.hero.dek}</p>
-              <u>{h.hero.buttonText}</u>
-            </div>
-          </section>
-
-          <section className="previewSection two">
-            <div>
-              <div className="previewEyebrow" style={textPreview(h.lookbook.eyebrowStyle)}>{h.lookbook.eyebrow}</div>
-              <h2 style={textPreview(h.lookbook.titleStyle)}>{h.lookbook.title}</h2>
-              <p style={textPreview(h.lookbook.bodyStyle)}>{h.lookbook.body}</p>
-            </div>
-            <div className="previewMedia"><MediaPreview asset={h.lookbook.media} fallback="/images/leticia-hero.jpg" /></div>
-          </section>
-
-          <section className="previewSection">
-            <div className="previewEyebrow" style={textPreview(h.beauty.eyebrowStyle)}>{h.beauty.eyebrow}</div>
-            <h2 style={textPreview(h.beauty.titleStyle)}>{h.beauty.title}</h2>
-            <div className="previewMedia wide"><MediaPreview asset={h.beauty.media} fallback="/images/leticia-hero.jpg" /></div>
-            <p style={textPreview(h.beauty.introStyle)}>{h.beauty.intro}</p>
-          </section>
-
-          <section className="previewSection previewUgc">
-            <div className="previewEyebrow" style={textPreview(h.ugc.eyebrowStyle)}>{h.ugc.eyebrow}</div>
-            <h2 style={textPreview(h.ugc.titleStyle)}>{h.ugc.title}</h2>
-            <p style={textPreview(h.ugc.bodyStyle)}>{h.ugc.body}</p>
-            <div className="previewMediaPair">
-              <div className="previewMedia"><MediaPreview asset={h.ugc.mediaProduct} fallback="/images/leticia-hero.jpg" /></div>
-              <div className="previewMedia"><MediaPreview asset={h.ugc.mediaCreator} fallback="/images/leticia-hero.jpg" /></div>
-            </div>
-          </section>
-
-          <section className="previewNewsletter">
-            <div className="previewEyebrow" style={textPreview(h.newsletter.eyebrowStyle)}>{h.newsletter.eyebrow}</div>
-            <h2 style={textPreview(h.newsletter.titleStyle)}>{h.newsletter.title}</h2>
-          </section>
+        <div className="previewBar"><i /><i /><i /><span>leticia-ugc-production.up.railway.app</span></div>
+        <div className="previewViewport" ref={previewHostRef} style={{ height: `${(previewMode === "desktop" ? 4300 : 6500) * previewScale}px` }}>
+          <iframe
+            ref={iframeRef}
+            title="Prévia real do blog"
+            className="adminPreviewFrame"
+            src="/?editorPreview=1"
+            style={{
+              width: previewMode === "desktop" ? "1440px" : "390px",
+              height: previewMode === "desktop" ? "4300px" : "6500px",
+              transform: `scale(${previewScale})`,
+            }}
+            onLoad={() => {
+              if (!config) return;
+              iframeRef.current?.contentWindow?.postMessage(
+                { type: "LETICIA_EDITOR_PREVIEW", config },
+                window.location.origin
+              );
+            }}
+          />
         </div>
       </div>
     </main>
