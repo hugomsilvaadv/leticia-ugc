@@ -39,6 +39,16 @@ export function Footer() {
 }
 
 export function Visual({ kind = "rose", label = "editorial" }: { kind?: string; label?: string }) {
+  if (kind === "hero") {
+    return (
+      <img
+        className="heroPhoto"
+        src="/images/leticia-hero.jpg"
+        alt="Letícia Leite em editorial de moda"
+      />
+    );
+  }
+
   return <div className={"visual " + kind}><span>{label}</span></div>;
 }
 
