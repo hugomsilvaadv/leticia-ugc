@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Card, Visual } from "@/components/Site";
-import { articles, sectionCopy, sectionFromSlug } from "@/lib/content";
+import { readArticles } from "@/lib/article-store";
+import { sectionCopy, sectionFromSlug } from "@/lib/content";
+
+export const dynamic = "force-dynamic";
 
 export default async function SectionPage({ params }: { params: Promise<{ section: string }> }) {
   const { section } = await params;
@@ -26,7 +29,7 @@ export default async function SectionPage({ params }: { params: Promise<{ sectio
 
   const category = sectionFromSlug(section);
   if (!category) notFound();
-  const list = articles.filter(a => a.category === category);
+  const list = (await readArticles()).filter(a => a.published && a.category === category);
 
   return <main>
     <section className="categoryHero shell"><p className="eyebrow">Arquivo editorial</p><h1>{category}</h1><p>{sectionCopy[category]}</p></section>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { MediaAsset, SiteConfig, TextStyle } from "@/lib/site-config";
+import type { MediaAsset, SiteConfig, TextStyle } from "@/lib/site-config";\nimport type { ArticleRecord } from "@/lib/article-store";
 
 const fonts = ["Georgia", "Times New Roman", "Arial", "Verdana", "Trebuchet MS", "Garamond", "Courier New"];
 
@@ -128,6 +128,9 @@ export default function AdminEditor() {
   const [tab, setTab] = useState("hero");
   const [status, setStatus] = useState("Carregando...");
   const [saving, setSaving] = useState(false);
+  const [articles, setArticles] = useState<ArticleRecord[]>([]);
+  const [articlesLoaded, setArticlesLoaded] = useState(false);
+  const [selectedSlug, setSelectedSlug] = useState("");
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
   const [previewScale, setPreviewScale] = useState(1);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -138,6 +141,15 @@ export default function AdminEditor() {
       .then(r => r.json())
       .then(data => { setConfig(data); setStatus("Pronto para editar."); })
       .catch(() => setStatus("Não foi possível carregar a configuração."));
+
+    fetch("/api/articles", { cache: "no-store" })
+      .then(r => r.json())
+      .then((data: ArticleRecord[]) => {
+        setArticles(data);
+        setSelectedSlug(data[0]?.slug || "");
+        setArticlesLoaded(true);
+      })
+      .catch(() => setStatus("Site carregado, mas houve erro ao carregar os artigos."));
   }, []);
 
   useEffect(() => {
@@ -163,7 +175,7 @@ export default function AdminEditor() {
   }, [config]);
 
   const tabs = useMemo(() => [
-    ["marca", "Marca"], ["hero", "Destaque"], ["lookbook", "Looks"], ["beauty", "Beleza"],
+    ["artigos", "Artigos"], ["marca", "Marca"], ["hero", "Destaque"], ["lookbook", "Looks"], ["beauty", "Beleza"],
     ["ugc", "UGC"], ["newsletter", "Newsletter"], ["footer", "Rodapé"],
   ], []);
 
@@ -178,12 +190,32 @@ export default function AdminEditor() {
       body: JSON.stringify(config),
     });
     const data = await response.json();
-    setSaving(false);
     if (!response.ok) {
+      setSaving(false);
       setStatus(data.error || "Falha ao salvar.");
       return;
     }
     setConfig(data);
+
+    if (articlesLoaded) {
+      const articleResponse = await fetch("/api/articles", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "x-admin-password": password },
+        body: JSON.stringify(articles),
+      });
+      const articleData = await articleResponse.json();
+      if (!articleResponse.ok) {
+        setSaving(false);
+        setStatus(articleData.error || "O site foi salvo, mas houve erro nos artigos.");
+        return;
+      }
+      setArticles(articleData);
+      if (selectedSlug && !articleData.some((article: ArticleRecord) => article.slug === selectedSlug)) {
+        setSelectedSlug(articleData[0]?.slug || "");
+      }
+    }
+
+    setSaving(false);
     setStatus("Alterações publicadas.");
   }
 
@@ -195,6 +227,41 @@ export default function AdminEditor() {
   const setFooter = (patch: Partial<SiteConfig["footer"]>) => setConfig({ ...config, footer: { ...config.footer, ...patch } });
 
   const h = config.home;
+  const selectedArticle = articles.find(article => article.slug === selectedSlug) ?? null;
+
+  const updateArticle = (patch: Partial<ArticleRecord>) => {
+    if (!selectedArticle) return;
+    const oldSlug = selectedArticle.slug;
+    const next = { ...selectedArticle, ...patch };
+    setArticles(items => items.map(article => article.slug === oldSlug ? next : article));
+    if (patch.slug !== undefined) setSelectedSlug(patch.slug);
+  };
+
+  const createArticle = () => {
+    const slug = `novo-artigo-${Date.now().toString().slice(-6)}`;
+    const article: ArticleRecord = {
+      slug,
+      title: "Novo artigo",
+      dek: "",
+      category: "Moda",
+      readTime: "5 min",
+      published: false,
+      publishedAt: new Date().toISOString().slice(0, 10),
+      hero: { url: "", positionX: 50, positionY: 50, zoom: 100, opacity: 100, fit: "cover" },
+      body: "",
+    };
+    setArticles(items => [article, ...items]);
+    setSelectedSlug(slug);
+    setTab("artigos");
+  };
+
+  const deleteArticle = () => {
+    if (!selectedArticle) return;
+    if (!window.confirm(`Excluir “${selectedArticle.title}”? Essa exclusão só será efetivada ao clicar em Salvar e publicar.`)) return;
+    const next = articles.filter(article => article.slug !== selectedArticle.slug);
+    setArticles(next);
+    setSelectedSlug(next[0]?.slug || "");
+  };
 
   return <div className="adminOverlay">
     <aside className="adminPanel">
@@ -212,6 +279,55 @@ export default function AdminEditor() {
       </nav>
 
       <div className="adminControls">
+        {tab === "artigos" && <div className="articleAdmin">
+          <div className="articleAdminHeader">
+            <button type="button" className="adminPrimarySmall" onClick={createArticle}>+ Novo artigo</button>
+            <span>{articles.length} artigo(s)</span>
+          </div>
+
+          <div className="adminCard">
+            <strong>Selecionar matéria</strong>
+            <select value={selectedSlug} onChange={e => setSelectedSlug(e.target.value)}>
+              {articles.map(article => <option key={article.slug} value={article.slug}>{article.published ? "●" : "○"} {article.title}</option>)}
+            </select>
+          </div>
+
+          {selectedArticle && <>
+            <div className="adminCard">
+              <strong>Publicação</strong>
+              <label className="adminCheck"><input type="checkbox" checked={selectedArticle.published} onChange={e => updateArticle({ published: e.target.checked })} /> Publicado no site</label>
+              <label>Data de publicação<input type="date" value={selectedArticle.publishedAt} onChange={e => updateArticle({ publishedAt: e.target.value })} /></label>
+              <label>Categoria
+                <select value={selectedArticle.category} onChange={e => updateArticle({ category: e.target.value as ArticleRecord["category"] })}>
+                  <option value="Moda">Moda</option>
+                  <option value="Beleza">Beleza</option>
+                  <option value="Lifestyle">Lifestyle</option>
+                  <option value="Achados">Achados</option>
+                </select>
+              </label>
+              <label>Tempo de leitura<input value={selectedArticle.readTime} onChange={e => updateArticle({ readTime: e.target.value })} placeholder="5 min" /></label>
+            </div>
+
+            <div className="adminCard">
+              <strong>Título e endereço</strong>
+              <label>Título<input value={selectedArticle.title} onChange={e => updateArticle({ title: e.target.value })} /></label>
+              <label>Slug / endereço<input value={selectedArticle.slug} onChange={e => updateArticle({ slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, "-") })} /></label>
+              <label>Resumo<textarea rows={4} value={selectedArticle.dek} onChange={e => updateArticle({ dek: e.target.value })} /></label>
+            </div>
+
+            <MediaControl label="Imagem de capa" asset={selectedArticle.hero} password={password} onChange={hero => updateArticle({ hero })} />
+
+            <div className="adminCard">
+              <strong>Corpo da matéria</strong>
+              <p className="adminHint">Parágrafos: deixe uma linha em branco. Título interno: comece com ##. Citação: comece com &gt;.</p>
+              <textarea className="articleBodyEditor" rows={18} value={selectedArticle.body} onChange={e => updateArticle({ body: e.target.value })} />
+              {selectedArticle.slug && <a className="adminArticleLink" href={`/artigos/${selectedArticle.slug}`} target="_blank" rel="noreferrer">Abrir esta matéria ↗</a>}
+            </div>
+
+            <button type="button" className="adminDanger" onClick={deleteArticle}>Excluir matéria</button>
+          </>}
+        </div>}
+
         {tab === "marca" && <>
           <div className="adminCard"><strong>Linha superior</strong><input value={config.brand.utility} onChange={e => setBrand({ utility: e.target.value })} /></div>
           <TextControl label="Nome / marca" value={config.brand.wordmark} style={config.brand.wordmarkStyle}

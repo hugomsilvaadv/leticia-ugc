@@ -65,3 +65,13 @@
 .previewModeButtons button.active{background:#3b2b22;color:#fff;border-color:#3b2b22}
 .previewViewport{position:relative;overflow:hidden;background:#fff}
 .adminPreviewFrame{position:absolute;left:0;top:0;border:0;display:block;transform-origin:top left;background:#fdf9f2}
+
+.articleAdmin{display:grid;gap:12px}
+.articleAdminHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:10px;color:#6d5d53}
+.adminPrimarySmall{border:0;background:#7c543d;color:#fff;padding:9px 12px;font-size:10px;text-transform:uppercase;letter-spacing:.07em;cursor:pointer}
+.adminCheck{display:flex!important;grid-template-columns:auto 1fr!important;align-items:center;justify-content:start;gap:8px!important;text-transform:none!important;font-size:12px!important}
+.adminCheck input{width:auto!important}
+.adminHint{font-size:11px;margin:0;color:#76665c}
+.articleBodyEditor{min-height:320px;line-height:1.55;resize:vertical}
+.adminArticleLink{font-size:11px;text-decoration:underline}
+.adminDanger{border:1px solid #9d5b52;background:#fff;color:#8c443b;padding:10px 12px;font-size:10px;text-transform:uppercase;letter-spacing:.07em;cursor:pointer}

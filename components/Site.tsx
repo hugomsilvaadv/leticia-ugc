@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
-import { Article, articles } from "@/lib/content";
+import { Article } from "@/lib/content";
 import { readSiteConfig, type MediaAsset } from "@/lib/site-config";
 
 export async function Header() {
