@@ -1,19 +1,35 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { Card, Latest, Newsletter, Visual } from "@/components/Site";
 import { articles } from "@/lib/content";
+import { readSiteConfig, type TextStyle } from "@/lib/site-config";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+function textStyle(style: TextStyle): CSSProperties {
+  return {
+    fontFamily: style.fontFamily,
+    fontSize: style.fontSize,
+    transform: `translate(${style.x}px, ${style.y}px)`,
+    textAlign: style.align,
+  };
+}
+
+export default async function Home() {
   const lead = articles[0];
+  const config = await readSiteConfig();
+  const { hero, lookbook, beauty, ugc, newsletter } = config.home;
+
   return (
     <main>
       <section className="lead shell">
         <div className="leadMain">
-          <Visual kind="hero" label="Letícia Leite · moda & estilo" />
+          <Visual kind="hero" label="Letícia Leite · moda & estilo" asset={hero.media} />
           <div className="leadCopy">
-            <p className="eyebrow">Em destaque · Moda</p>
-            <h1><Link href={"/artigos/" + lead.slug}>{lead.title}</Link></h1>
-            <p>{lead.dek}</p>
-            <Link className="textLink" href={"/artigos/" + lead.slug}>Ler matéria</Link>
+            <p className="eyebrow" style={textStyle(hero.eyebrowStyle)}>{hero.eyebrow}</p>
+            <h1 style={textStyle(hero.titleStyle)}><Link href={"/artigos/" + lead.slug}>{hero.title}</Link></h1>
+            <p style={textStyle(hero.dekStyle)}>{hero.dek}</p>
+            <Link className="textLink" href={"/artigos/" + lead.slug}>{hero.buttonText}</Link>
           </div>
         </div>
         <aside className="leadSide">
@@ -30,24 +46,39 @@ export default function Home() {
       </section>
 
       <section className="lookbook shell">
-        <div><p className="eyebrow">Looks & styling</p><h2>Estilo é repertório em movimento.</h2><p>Referências, combinações e pequenas decisões de proporção que fazem um look conversar com quem veste.</p><Link className="textLink" href="/moda">Explorar styling</Link></div>
-        <Visual kind="look" label="lookbook · foto da Letícia" />
+        <div>
+          <p className="eyebrow" style={textStyle(lookbook.eyebrowStyle)}>{lookbook.eyebrow}</p>
+          <h2 style={textStyle(lookbook.titleStyle)}>{lookbook.title}</h2>
+          <p style={textStyle(lookbook.bodyStyle)}>{lookbook.body}</p>
+          <Link className="textLink" href="/moda">{lookbook.buttonText}</Link>
+        </div>
+        <Visual kind="look" label="lookbook · foto da Letícia" asset={lookbook.media} />
       </section>
 
       <section className="section shell">
-        <div className="sectionHead"><div><p className="eyebrow">Beleza</p><h2>Testados, favoritos e acabamento</h2></div><Link className="textLink" href="/beleza">Ver beleza</Link></div>
-        <div className="split"><Visual kind="beauty" label="beleza · review" /><div><p className="intro">Beleza entra como extensão do estilo: textura, cor, rotina e produto vistos sem promessa exagerada.</p><Card article={articles[2]} compact /></div></div>
+        <div className="sectionHead"><div><p className="eyebrow" style={textStyle(beauty.eyebrowStyle)}>{beauty.eyebrow}</p><h2 style={textStyle(beauty.titleStyle)}>{beauty.title}</h2></div><Link className="textLink" href="/beleza">Ver beleza</Link></div>
+        <div className="split"><Visual kind="beauty" label="beleza · review" asset={beauty.media} /><div><p className="intro" style={textStyle(beauty.introStyle)}>{beauty.intro}</p><Card article={articles[2]} compact /></div></div>
       </section>
 
       <section className="ugcBand">
         <div className="shell ugcGrid">
-          <div><p className="eyebrow">UGC · Trabalhe comigo</p><h2>Conteúdo pensado para conectar marca, produto e pessoa.</h2><p>Criação para moda, beleza e lifestyle com olhar de Design de Moda, styling, comunicação natural e atenção ao briefing.</p><div className="actions"><Link className="button" href="/ugc">Ver portfólio UGC</Link><a className="textLink" href="mailto:leticialeitecontent@gmail.com">Falar sobre um projeto</a></div></div>
-          <div className="ugcVisuals"><Visual kind="jewelry" label="produto" /><Visual kind="portrait" label="creator" /></div>
+          <div>
+            <p className="eyebrow" style={textStyle(ugc.eyebrowStyle)}>{ugc.eyebrow}</p>
+            <h2 style={textStyle(ugc.titleStyle)}>{ugc.title}</h2>
+            <p style={textStyle(ugc.bodyStyle)}>{ugc.body}</p>
+            <div className="actions"><Link className="button" href="/ugc">{ugc.buttonText}</Link><a className="textLink" href="mailto:leticialeitecontent@gmail.com">Falar sobre um projeto</a></div>
+          </div>
+          <div className="ugcVisuals"><Visual kind="jewelry" label="produto" asset={ugc.mediaProduct} /><Visual kind="portrait" label="creator" asset={ugc.mediaCreator} /></div>
         </div>
       </section>
 
       <section className="section shell"><div className="sectionHead"><div><p className="eyebrow">Últimas leituras</p><h2>Do arquivo</h2></div></div><Latest /></section>
-      <Newsletter />
+      <Newsletter
+        eyebrow={newsletter.eyebrow}
+        title={newsletter.title}
+        eyebrowStyle={textStyle(newsletter.eyebrowStyle)}
+        titleStyle={textStyle(newsletter.titleStyle)}
+      />
     </main>
   );
 }
