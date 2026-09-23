@@ -109,6 +109,6 @@ export function Newsletter({ eyebrow = "Carta da Letícia", title = "Moda, belez
   );
 }
 
-export function Latest() {
+export function Latest({ articles }: { articles: Article[] }) {
   return <div className="articleGrid">{articles.slice(2).map(a => <Card key={a.slug} article={a} />)}</div>;
 }
