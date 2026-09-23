@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { MediaAsset, SiteConfig, TextStyle } from "@/lib/site-config";\nimport type { ArticleRecord } from "@/lib/article-store";
+import type { MediaAsset, SiteConfig, TextStyle } from "@/lib/site-config";
+import type { ArticleRecord } from "@/lib/article-store";
 
 const fonts = ["Georgia", "Times New Roman", "Arial", "Verdana", "Trebuchet MS", "Garamond", "Courier New"];
 
