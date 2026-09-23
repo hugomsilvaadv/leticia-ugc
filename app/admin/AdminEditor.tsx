@@ -100,29 +100,6 @@ function MediaControl({
   </div>;
 }
 
-function textPreview(style: TextStyle) {
-  return {
-    fontFamily: style.fontFamily,
-    fontSize: `${Math.max(9, style.fontSize * .72)}px`,
-    transform: `translate(${style.x * .55}px, ${style.y * .55}px)`,
-    textAlign: style.align,
-  } as React.CSSProperties;
-}
-
-function MediaPreview({ asset, fallback }: { asset: MediaAsset; fallback: string }) {
-  const src = asset.url || fallback;
-  const common = {
-    width: "100%", height: "100%", objectFit: asset.fit,
-    objectPosition: `${asset.positionX}% ${asset.positionY}%`,
-    transform: `scale(${asset.zoom / 100})`,
-    opacity: asset.opacity / 100,
-  } as React.CSSProperties;
-
-  return /\.(mp4|webm)(\?|$)/i.test(src)
-    ? <video src={src} style={common} autoPlay muted loop playsInline />
-    : <img src={src} alt="" style={common} />;
-}
-
 export default function AdminEditor() {
   const [config, setConfig] = useState<SiteConfig | null>(null);
   const [password, setPassword] = useState("");
@@ -136,6 +113,7 @@ export default function AdminEditor() {
   const [previewScale, setPreviewScale] = useState(1);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const previewHostRef = useRef<HTMLDivElement>(null);
+  const selectedArticle = articles.find(article => article.slug === selectedSlug) ?? null;
 
   useEffect(() => {
     fetch("/api/site-config", { cache: "no-store" })
@@ -159,8 +137,10 @@ export default function AdminEditor() {
 
     const observer = new ResizeObserver(() => {
       const targetWidth = previewMode === "desktop" ? 1440 : 390;
-      const available = Math.max(280, host.clientWidth - 20);
-      setPreviewScale(Math.min(1, available / targetWidth));
+      const targetHeight = previewMode === "desktop" ? 900 : 844;
+      const availableWidth = Math.max(260, host.clientWidth - 24);
+      const availableHeight = Math.max(320, host.clientHeight - 24);
+      setPreviewScale(Math.min(1, availableWidth / targetWidth, availableHeight / targetHeight));
     });
 
     observer.observe(host);
@@ -169,11 +149,31 @@ export default function AdminEditor() {
 
   useEffect(() => {
     if (!config) return;
-    iframeRef.current?.contentWindow?.postMessage(
-      { type: "LETICIA_EDITOR_PREVIEW", config },
-      window.location.origin
-    );
-  }, [config]);
+    const scrollKeyByTab: Record<string, string> = {
+      artigos: "article.title",
+      marca: "brand.wordmark",
+      hero: "home.hero.title",
+      lookbook: "home.lookbook.title",
+      beauty: "home.beauty.title",
+      ugc: "home.ugc.title",
+      newsletter: "home.newsletter.title",
+      footer: "footer.description",
+    };
+
+    const frame = window.requestAnimationFrame(() => {
+      iframeRef.current?.contentWindow?.postMessage(
+        {
+          type: "LETICIA_EDITOR_PREVIEW",
+          config,
+          article: tab === "artigos" ? selectedArticle ?? undefined : undefined,
+          scrollKey: scrollKeyByTab[tab],
+        },
+        window.location.origin
+      );
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [config, selectedArticle, tab]);
 
   const tabs = useMemo(() => [
     ["artigos", "Artigos"], ["marca", "Marca"], ["hero", "Destaque"], ["lookbook", "Looks"], ["beauty", "Beleza"],
@@ -228,7 +228,21 @@ export default function AdminEditor() {
   const setFooter = (patch: Partial<SiteConfig["footer"]>) => setConfig({ ...config, footer: { ...config.footer, ...patch } });
 
   const h = config.home;
-  const selectedArticle = articles.find(article => article.slug === selectedSlug) ?? null;
+  const previewWidth = previewMode === "desktop" ? 1440 : 390;
+  const previewHeight = previewMode === "desktop" ? 900 : 844;
+  const previewSrc = tab === "artigos" ? "/editor-preview/article?editorPreview=1" : "/?editorPreview=1";
+
+  const postPreview = (scrollKey?: string) => {
+    iframeRef.current?.contentWindow?.postMessage(
+      {
+        type: "LETICIA_EDITOR_PREVIEW",
+        config,
+        article: tab === "artigos" ? selectedArticle ?? undefined : undefined,
+        scrollKey,
+      },
+      window.location.origin
+    );
+  };
 
   const updateArticle = (patch: Partial<ArticleRecord>) => {
     if (!selectedArticle) return;
@@ -311,9 +325,9 @@ export default function AdminEditor() {
 
             <div className="adminCard">
               <strong>Título e endereço</strong>
-              <label>Título<input value={selectedArticle.title} onChange={e => updateArticle({ title: e.target.value })} /></label>
+              <label>Título<input value={selectedArticle.title} onFocus={() => postPreview("article.title")} onChange={e => updateArticle({ title: e.target.value })} /></label>
               <label>Slug / endereço<input value={selectedArticle.slug} onChange={e => updateArticle({ slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, "-") })} /></label>
-              <label>Resumo<textarea rows={4} value={selectedArticle.dek} onChange={e => updateArticle({ dek: e.target.value })} /></label>
+              <label>Resumo<textarea rows={4} value={selectedArticle.dek} onFocus={() => postPreview("article.dek")} onChange={e => updateArticle({ dek: e.target.value })} /></label>
             </div>
 
             <MediaControl label="Imagem de capa" asset={selectedArticle.hero} password={password} onChange={hero => updateArticle({ hero })} />
@@ -321,7 +335,7 @@ export default function AdminEditor() {
             <div className="adminCard">
               <strong>Corpo da matéria</strong>
               <p className="adminHint">Parágrafos: deixe uma linha em branco. Título interno: comece com ##. Citação: comece com &gt;.</p>
-              <textarea className="articleBodyEditor" rows={18} value={selectedArticle.body} onChange={e => updateArticle({ body: e.target.value })} />
+              <textarea className="articleBodyEditor" rows={18} value={selectedArticle.body} onFocus={() => postPreview("article.body")} onChange={e => updateArticle({ body: e.target.value })} />
               {selectedArticle.slug && <a className="adminArticleLink" href={`/artigos/${selectedArticle.slug}`} target="_blank" rel="noreferrer">Abrir esta matéria ↗</a>}
             </div>
 
@@ -401,33 +415,43 @@ export default function AdminEditor() {
     <main className="adminPreview">
       <div className="adminPreviewToolbar">
         <div>
-          <strong>Prévia real do site</strong>
-          <span>Mesma página, mesmos componentes e mesmo CSS do público.</span>
+          <strong>{tab === "artigos" ? "Prévia da matéria" : "Prévia real do site"}</strong>
+          <span>{tab === "artigos" ? "A matéria selecionada muda aqui enquanto você edita." : "A prévia acompanha automaticamente a seção selecionada."}</span>
         </div>
         <div className="previewModeButtons">
           <button className={previewMode === "desktop" ? "active" : ""} onClick={() => setPreviewMode("desktop")}>Desktop</button>
           <button className={previewMode === "mobile" ? "active" : ""} onClick={() => setPreviewMode("mobile")}>Celular</button>
         </div>
       </div>
+
       <div className="previewBrowser">
-        <div className="previewBar"><i /><i /><i /><span>leticia-ugc-production.up.railway.app</span></div>
-        <div className="previewViewport" ref={previewHostRef} style={{ height: `${(previewMode === "desktop" ? 4300 : 6500) * previewScale}px` }}>
+        <div className="previewBar">
+          <i /><i /><i />
+          <span>{tab === "artigos" && selectedArticle ? `/artigos/${selectedArticle.slug}` : "leticia-ugc-production.up.railway.app"}</span>
+        </div>
+        <div className="previewViewport" ref={previewHostRef}>
           <iframe
             ref={iframeRef}
             title="Prévia real do blog"
             className="adminPreviewFrame"
-            src="/?editorPreview=1"
+            src={previewSrc}
             style={{
-              width: previewMode === "desktop" ? "1440px" : "390px",
-              height: previewMode === "desktop" ? "4300px" : "6500px",
-              transform: `scale(${previewScale})`,
+              width: `${previewWidth}px`,
+              height: `${previewHeight}px`,
+              transform: `translate(-50%, -50%) scale(${previewScale})`,
             }}
             onLoad={() => {
-              if (!config) return;
-              iframeRef.current?.contentWindow?.postMessage(
-                { type: "LETICIA_EDITOR_PREVIEW", config },
-                window.location.origin
-              );
+              const scrollKeyByTab: Record<string, string> = {
+                artigos: "article.title",
+                marca: "brand.wordmark",
+                hero: "home.hero.title",
+                lookbook: "home.lookbook.title",
+                beauty: "home.beauty.title",
+                ugc: "home.ugc.title",
+                newsletter: "home.newsletter.title",
+                footer: "footer.description",
+              };
+              postPreview(scrollKeyByTab[tab]);
             }}
           />
         </div>

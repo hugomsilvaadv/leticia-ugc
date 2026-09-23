@@ -1,11 +1,14 @@
 'use client';
 
 import { useEffect } from "react";
+import type { ArticleRecord } from "@/lib/article-store";
 import type { MediaAsset, SiteConfig, TextStyle } from "@/lib/site-config";
 
 type PreviewMessage = {
   type: "LETICIA_EDITOR_PREVIEW";
-  config: SiteConfig;
+  config?: SiteConfig;
+  article?: ArticleRecord;
+  scrollKey?: string;
 };
 
 function applyStyle(element: HTMLElement, style?: TextStyle) {
@@ -87,16 +90,59 @@ function applyConfig(config: SiteConfig) {
 
   applyText("home.newsletter.eyebrow", config.home.newsletter.eyebrow, config.home.newsletter.eyebrowStyle);
   applyText("home.newsletter.title", config.home.newsletter.title, config.home.newsletter.titleStyle);
-
   applyText("footer.description", config.footer.description);
+}
+
+function formatDate(value: string) {
+  const date = new Date(value + "T12:00:00");
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", year: "numeric" }).format(date);
+}
+
+function applyArticleBody(body: string) {
+  document.querySelectorAll<HTMLElement>('[data-editor-body="article.body"]').forEach((holder) => {
+    holder.replaceChildren();
+    body.split(/\n\s*\n/).filter(Boolean).forEach((block) => {
+      const clean = block.trim();
+      const element = clean.startsWith("## ")
+        ? document.createElement("h2")
+        : clean.startsWith("> ")
+          ? document.createElement("blockquote")
+          : document.createElement("p");
+      element.textContent = clean.startsWith("## ") ? clean.slice(3) : clean.startsWith("> ") ? clean.slice(2) : clean;
+      holder.appendChild(element);
+    });
+  });
+}
+
+function applyArticle(article: ArticleRecord) {
+  applyText("article.category", article.category);
+  applyText("article.title", article.title);
+  applyText("article.dek", article.dek);
+  applyText("article.publishedAt", formatDate(article.publishedAt));
+  applyText("article.readTime", `${article.readTime} de leitura`);
+  applyMedia("article.hero", article.hero);
+  applyArticleBody(article.body);
+}
+
+function scrollToEditorKey(key?: string) {
+  if (!key) return;
+  window.setTimeout(() => {
+    const element = document.querySelector<HTMLElement>(
+      `[data-editor="${key}"], [data-editor-media="${key}"], [data-editor-body="${key}"]`
+    );
+    element?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, 80);
 }
 
 export default function PreviewBridge() {
   useEffect(() => {
     const handler = (event: MessageEvent<PreviewMessage>) => {
       if (event.origin !== window.location.origin) return;
-      if (event.data?.type !== "LETICIA_EDITOR_PREVIEW" || !event.data.config) return;
-      applyConfig(event.data.config);
+      if (event.data?.type !== "LETICIA_EDITOR_PREVIEW") return;
+      if (event.data.config) applyConfig(event.data.config);
+      if (event.data.article) applyArticle(event.data.article);
+      scrollToEditorKey(event.data.scrollKey);
     };
 
     const isEditorPreview = new URLSearchParams(window.location.search).get("editorPreview") === "1";
