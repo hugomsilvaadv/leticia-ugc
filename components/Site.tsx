@@ -1,13 +1,23 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { Article, articles } from "@/lib/content";
+import { readSiteConfig, type MediaAsset } from "@/lib/site-config";
 
-export function Header() {
+export async function Header() {
+  const config = await readSiteConfig();
+  const style: CSSProperties = {
+    fontFamily: config.brand.wordmarkStyle.fontFamily,
+    fontSize: config.brand.wordmarkStyle.fontSize,
+    transform: `translate(${config.brand.wordmarkStyle.x}px, ${config.brand.wordmarkStyle.y}px)`,
+    textAlign: config.brand.wordmarkStyle.align,
+  };
+
   return (
     <header>
-      <div className="utility">moda • beleza • lifestyle • conteúdo autoral</div>
+      <div className="utility">{config.brand.utility}</div>
       <div className="masthead shell">
-        <Link href="/" className="wordmark">LETÍCIA LEITE</Link>
-        <span className="signature">editado por Letícia</span>
+        <Link href="/" className="wordmark" style={style}>{config.brand.wordmark}</Link>
+        <span className="signature">{config.brand.signature}</span>
       </div>
       <nav className="nav">
         <div className="shell navInner">
@@ -22,13 +32,14 @@ export function Header() {
   );
 }
 
-export function Footer() {
+export async function Footer() {
+  const config = await readSiteConfig();
   return (
     <footer className="footer">
       <div className="shell footerGrid">
         <div>
           <div className="footerBrand">LETÍCIA LEITE</div>
-          <p>Moda, criatividade e comunicação para transformar produtos em experiências.</p>
+          <p>{config.footer.description}</p>
         </div>
         <div><strong>Explorar</strong><Link href="/moda">Moda</Link><Link href="/beleza">Beleza</Link><Link href="/lifestyle">Lifestyle</Link><Link href="/achados">Achados</Link></div>
         <div><strong>Contato</strong><Link href="/ugc">UGC</Link><a href="mailto:leticialeitecontent@gmail.com">E-mail</a><a href="https://instagram.com/leticiafndg" target="_blank" rel="noreferrer">Instagram</a></div>
@@ -38,14 +49,34 @@ export function Footer() {
   );
 }
 
-export function Visual({ kind = "rose", label = "editorial" }: { kind?: string; label?: string }) {
+function MediaContent({ asset, alt }: { asset: MediaAsset; alt: string }) {
+  const style: CSSProperties = {
+    width: "100%",
+    height: "100%",
+    objectFit: asset.fit,
+    objectPosition: `${asset.positionX}% ${asset.positionY}%`,
+    transform: `scale(${asset.zoom / 100})`,
+    opacity: asset.opacity / 100,
+  };
+
+  if (/\.(mp4|webm)(\?|$)/i.test(asset.url)) {
+    return <video src={asset.url} style={style} autoPlay muted loop playsInline />;
+  }
+  return <img src={asset.url} alt={alt} style={style} />;
+}
+
+export function Visual({ kind = "rose", label = "editorial", asset }: { kind?: string; label?: string; asset?: MediaAsset }) {
+  if (asset?.url) {
+    return <div className={(kind === "hero" ? "heroPhotoFrame" : "visual mediaVisual " + kind)}>
+      <MediaContent asset={asset} alt={label} />
+    </div>;
+  }
+
   if (kind === "hero") {
     return (
-      <img
-        className="heroPhoto"
-        src="/images/leticia-hero.jpg"
-        alt="Letícia Leite em editorial de moda"
-      />
+      <div className="heroPhotoFrame">
+        <img className="heroPhoto" src="/images/leticia-hero.jpg" alt="Letícia Leite em editorial de moda" />
+      </div>
     );
   }
 
@@ -64,10 +95,12 @@ export function Card({ article, compact = false }: { article: Article; compact?:
   );
 }
 
-export function Newsletter() {
+export function Newsletter({ eyebrow = "Carta da Letícia", title = "Moda, beleza e achados para chegar sem ruído.", eyebrowStyle, titleStyle }: {
+  eyebrow?: string; title?: string; eyebrowStyle?: CSSProperties; titleStyle?: CSSProperties;
+}) {
   return (
     <section className="newsletter shell">
-      <div><p className="eyebrow">Carta da Letícia</p><h2>Moda, beleza e achados para chegar sem ruído.</h2></div>
+      <div><p className="eyebrow" style={eyebrowStyle}>{eyebrow}</p><h2 style={titleStyle}>{title}</h2></div>
       <form><input aria-label="Seu e-mail" type="email" placeholder="seu@email.com" /><button type="button">Quero receber</button></form>
     </section>
   );
