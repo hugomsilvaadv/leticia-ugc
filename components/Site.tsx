@@ -90,6 +90,7 @@ export function Card({ article, compact = false }: { article: ArticleRecord; com
       <div className="meta"><span>{article.category}</span><span>{article.readTime}</span></div>
       <h3><Link href={"/artigos/" + article.slug}>{article.title}</Link></h3>
       {!compact && <p>{article.dek}</p>}
+      <small>conteúdo demonstrativo</small>
     </article>
   );
 }
