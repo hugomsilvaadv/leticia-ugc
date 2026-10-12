@@ -84,3 +84,40 @@
 .previewViewport{position:relative;overflow:hidden;flex:1;min-height:0;background:#d9d2cc}
 .adminPreviewFrame{position:absolute;left:50%;top:50%;border:1px solid #c9c0b8;display:block;transform-origin:center center;background:#fdf9f2;box-shadow:0 8px 24px rgba(59,43,34,.18)}
 @media(max-width:1000px){.adminPreview{padding:10px}}
+
+
+/* Portfólio editorial de fotos e vídeos */
+.portfolioSection{padding:54px 0 82px;border-top:1px solid var(--line)}
+.portfolioSection .sectionHead h2{font-family:var(--serif);font-size:clamp(36px,5vw,65px);line-height:1.06;font-weight:500;margin:0}
+.portfolioGallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.portfolioEntry{min-width:0}
+.portfolioMedia{position:relative;aspect-ratio:4/5;background:var(--blush);overflow:hidden;display:flex;align-items:center;justify-content:center}
+.portfolioMedia img,.portfolioMedia video{display:block;width:100%;height:100%;object-fit:cover}
+.portfolioMedia iframe{display:block;border:0;width:100%;height:100%;min-height:100%}
+.portfolioExternal{text-align:center;padding:24px;font-size:13px;text-decoration:underline}
+.portfolioCaption{padding:14px 0}
+.portfolioCaption span{font-size:11px;color:var(--terracotta);letter-spacing:.12em;text-transform:uppercase}
+.portfolioCaption h3{font-family:var(--serif);font-size:26px;font-weight:500;line-height:1.16;margin:5px 0}
+.portfolioCaption p{font-size:14px;color:#6d5d53;margin:5px 0}
+@media(max-width:900px){.portfolioGallery{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.portfolioGallery{grid-template-columns:1fr}.portfolioMedia{aspect-ratio:4/4.5}}
+
+/* Navegação do painel por áreas e páginas reais */
+.adminTabs{display:grid;align-content:start;gap:10px;overflow-y:auto;overflow-x:hidden;max-height:235px;padding:10px 14px;background:#faf8f5}
+.adminTabGroup{display:grid;gap:5px}
+.adminTabGroup>strong{font-size:10px;letter-spacing:.08em;color:#7a675a;text-transform:uppercase}
+.adminTabItems{display:flex;flex-wrap:wrap;gap:5px}
+.adminTabItems button{border:1px solid #d8cec6;background:#fff;padding:7px 9px;font-size:11px;white-space:normal;cursor:pointer;text-align:left}
+.adminTabItems button.active{background:#3b2b22;color:#fff;border-color:#3b2b22}
+.adminSectionInfo{display:grid;gap:3px;padding:12px 17px;background:#f6efe9;border-bottom:1px solid #e2d8cf}
+.adminSectionInfo strong{font:500 18px Georgia,serif}
+.adminSectionInfo p{margin:0;font-size:11px;line-height:1.5;color:#6e5e54}
+.adminSectionInfo a{font-size:11px;text-decoration:underline;color:#7c543d;justify-self:start}
+.portfolioEditorActions{display:flex;flex-wrap:wrap;gap:8px}
+.portfolioEditorActions button{background:#fff;border:1px solid #d8cec6;padding:9px 11px;font-size:11px;cursor:pointer}
+.portfolioEditorActions .adminDanger{color:#8c443b;border-color:#9d5b52}
+.adminMediaPreview{height:160px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#f5eee9}
+.adminMediaPreview img,.adminMediaPreview video{width:100%;height:100%;object-fit:contain}
+.adminMediaPreview a{font-size:12px;text-decoration:underline}
+.adminUploadHint{font-size:11px;color:#6d5d53;margin:0}
+@media(max-width:760px){.adminOverlay{height:100dvh;overflow:auto}.adminPanel{min-height:100dvh}.adminPreview{display:none!important}.adminTabs{max-height:200px}.adminSaveBar{position:sticky;bottom:0;z-index:2}}
