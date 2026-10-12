@@ -1,4 +1,5 @@
 import Link from "next/link";
+import MobileNavigation from "@/components/MobileNavigation";
 import type { CSSProperties } from "react";
 import type { ArticleRecord } from "@/lib/article-store";
 import { readSiteConfig, type MediaAsset } from "@/lib/site-config";
@@ -16,6 +17,7 @@ export async function Header() {
     <header>
       <div className="utility" data-editor="brand.utility">{config.brand.utility}</div>
       <div className="masthead shell">
+        <MobileNavigation wordmark={config.brand.wordmark} signature={config.brand.signature} />
         <Link href="/" className="wordmark" style={style} data-editor="brand.wordmark">{config.brand.wordmark}</Link>
         <span className="signature" data-editor="brand.signature">{config.brand.signature}</span>
       </div>
