@@ -76,8 +76,16 @@ function MediaControl({
     <strong>{label}</strong>
     <input type="file" accept="image/*,video/mp4,video/webm" onChange={e => upload(e.target.files?.[0])} />
     <label>URL da mídia
-      <input value={asset.url} placeholder="/images/foto.jpg" onChange={e => set("url", e.target.value)} />
+      <input value={asset.url} placeholder="/api/media/foto.jpg ou URL pública" onChange={e => set("url", e.target.value)} />
     </label>
+    {asset.url && <div className="adminMediaPreview">
+      {/\.(mp4|webm)(\?|$)/i.test(asset.url)
+        ? <video src={asset.url} controls playsInline preload="metadata" />
+        : /^https:\/\/(?:www\.)?(?:youtube\.com|youtu\.be|vimeo\.com|instagram\.com)/i.test(asset.url)
+          ? <a href={asset.url} target="_blank" rel="noreferrer">Abrir vídeo em outra aba ↗</a>
+          : <img src={asset.url} alt="Prévia da mídia enviada" />}
+    </div>}
+    <p className="adminUploadHint">Após enviar ou alterar o link, clique em Salvar e publicar. Arquivos até 30 MB.</p>
     <div className="adminRangeRow">
       <label>Posição X <b>{asset.positionX}%</b>
         <input type="range" min="0" max="100" value={asset.positionX} onChange={e => set("positionX", Number(e.target.value))} />
