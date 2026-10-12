@@ -122,36 +122,36 @@
 .adminUploadHint{font-size:11px;color:#6d5d53;margin:0}
 @media(max-width:760px){.adminOverlay{height:100dvh;overflow:auto}.adminPanel{min-height:100dvh}.adminPreview{display:none!important}.adminTabs{max-height:200px}.adminSaveBar{position:sticky;bottom:0;z-index:2}}
 
-/* Menu editorial no celular: navegação existente permanece no desktop. */
-.mobileMenuToggle,.mobileMenu{display:none}
+/* Navegação editorial responsiva: mesmo menu expansível no desktop e celular. */
+.masthead{position:relative}
+.mobileMenuToggle{position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:12;display:flex;align-items:center;justify-content:center;width:48px;height:48px;padding:10px;border:0;background:transparent;color:var(--espresso);cursor:pointer}
+.mobileMenuHamburger{display:flex;flex-direction:column;justify-content:space-between;width:27px;height:19px}
+.mobileMenuHamburger i{display:block;width:100%;height:2px;background:currentColor}
+.mobileMenu{display:block;position:fixed;inset:0;z-index:1000;width:100%;height:100vh;height:100dvh;overflow-y:auto;overscroll-behavior:contain;background:#151211;color:#fdf9f2;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-26px);transition:opacity .3s ease,transform .4s cubic-bezier(.2,.8,.2,1),visibility 0s linear .4s}
+.mobileMenu.isOpen{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0);transition:opacity .3s ease,transform .4s cubic-bezier(.2,.8,.2,1),visibility 0s}
+.mobileMenuPanel{width:100%;max-width:600px;min-height:100%;margin:0 auto;padding:calc(19px + env(safe-area-inset-top)) 26px calc(30px + env(safe-area-inset-bottom));display:flex;flex-direction:column}
+.mobileMenuTop{display:flex;align-items:center;justify-content:center;min-height:56px;position:relative}
+.mobileMenuClose{position:absolute;left:-9px;top:0;width:54px;height:54px;border:0;background:transparent;color:inherit;display:grid;place-items:center;cursor:pointer;font:300 44px/1 Arial,Helvetica,sans-serif}
+.mobileMenuBrand{font:500 clamp(21px,6.1vw,32px)/1 Georgia,"Times New Roman",serif;text-align:center;letter-spacing:.065em;margin-inline:52px}
+.mobileMenuLinks{display:flex;flex-direction:column;align-items:stretch;justify-content:center;flex:1;padding:35px 0;gap:2px}
+.mobileMenuLinks a{display:block;text-align:center;padding:11px 8px;color:#fdf9f2;font-family:var(--serif);font-size:clamp(28px,8vw,44px);font-weight:500;line-height:1.18;text-transform:uppercase;letter-spacing:.04em;opacity:0;transform:translateY(17px);transition:opacity .26s ease,transform .34s cubic-bezier(.2,.8,.2,1)}
+.mobileMenu.isOpen .mobileMenuLinks a{opacity:1;transform:translateY(0)}
+.mobileMenu.isOpen .mobileMenuLinks a:nth-child(1){transition-delay:.07s}
+.mobileMenu.isOpen .mobileMenuLinks a:nth-child(2){transition-delay:.105s}
+.mobileMenu.isOpen .mobileMenuLinks a:nth-child(3){transition-delay:.14s}
+.mobileMenu.isOpen .mobileMenuLinks a:nth-child(4){transition-delay:.175s}
+.mobileMenu.isOpen .mobileMenuLinks a:nth-child(5){transition-delay:.21s}
+.mobileMenu.isOpen .mobileMenuLinks a:nth-child(6){transition-delay:.245s}
+.mobileMenu.isOpen .mobileMenuLinks a:nth-child(7){transition-delay:.28s}
+.mobileMenuLinks a:active,.mobileMenuLinks a:focus-visible{color:var(--sand)}
+.mobileMenuSignature{margin:0;border-top:1px solid rgba(253,249,242,.25);padding-top:20px;text-align:center;color:var(--sand);font:italic 18px var(--serif)}
+.mobileMenuToggle:focus-visible,.mobileMenuClose:focus-visible,.mobileMenuLinks a:focus-visible{outline:2px solid var(--rose);outline-offset:4px}
+.mobileMenuLinks a:hover{color:var(--sand)}
 @media(max-width:600px){
-  .nav{display:none}
-  .masthead{position:relative;padding:20px 0 16px}
+  .masthead{padding:20px 0 16px}
   .masthead .wordmark{max-width:calc(100% - 88px);margin:0 auto;font-size:clamp(31px,8.5vw,42px)!important;line-height:1.02;letter-spacing:.045em}
   .masthead .signature{display:block;margin-top:9px;font-size:16px}
-  .mobileMenuToggle{position:absolute;left:0;top:21px;z-index:12;display:flex;align-items:center;justify-content:center;width:48px;height:48px;padding:10px;border:0;background:transparent;color:var(--espresso);cursor:pointer}
-  .mobileMenuHamburger{display:flex;flex-direction:column;justify-content:space-between;width:27px;height:19px}
-  .mobileMenuHamburger i{display:block;width:100%;height:2px;background:currentColor}
-  .mobileMenu{display:block;position:fixed;inset:0;z-index:1000;width:100%;height:100vh;height:100dvh;overflow-y:auto;overscroll-behavior:contain;background:#151211;color:#fdf9f2;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-26px);transition:opacity .3s ease,transform .4s cubic-bezier(.2,.8,.2,1),visibility 0s linear .4s}
-  .mobileMenu.isOpen{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0);transition:opacity .3s ease,transform .4s cubic-bezier(.2,.8,.2,1),visibility 0s}
-  .mobileMenuPanel{width:100%;max-width:600px;min-height:100%;margin:0 auto;padding:calc(19px + env(safe-area-inset-top)) 26px calc(30px + env(safe-area-inset-bottom));display:flex;flex-direction:column}
-  .mobileMenuTop{display:flex;align-items:center;justify-content:center;min-height:56px;position:relative}
-  .mobileMenuClose{position:absolute;left:-9px;top:0;width:54px;height:54px;border:0;background:transparent;color:inherit;display:grid;place-items:center;cursor:pointer;font:300 44px/1 Arial,Helvetica,sans-serif}
-  .mobileMenuBrand{font:500 clamp(21px,6.1vw,32px)/1 Georgia,"Times New Roman",serif;text-align:center;letter-spacing:.065em;margin-inline:52px}
-  .mobileMenuLinks{display:flex;flex-direction:column;align-items:stretch;justify-content:center;flex:1;padding:35px 0;gap:2px}
-  .mobileMenuLinks a{display:block;text-align:center;padding:11px 8px;color:#fdf9f2;font-family:var(--serif);font-size:clamp(28px,8vw,44px);font-weight:500;line-height:1.18;text-transform:uppercase;letter-spacing:.04em;opacity:0;transform:translateY(17px);transition:opacity .26s ease,transform .34s cubic-bezier(.2,.8,.2,1)}
-  .mobileMenu.isOpen .mobileMenuLinks a{opacity:1;transform:translateY(0)}
-  .mobileMenu.isOpen .mobileMenuLinks a:nth-child(1){transition-delay:.07s}
-  .mobileMenu.isOpen .mobileMenuLinks a:nth-child(2){transition-delay:.105s}
-  .mobileMenu.isOpen .mobileMenuLinks a:nth-child(3){transition-delay:.14s}
-  .mobileMenu.isOpen .mobileMenuLinks a:nth-child(4){transition-delay:.175s}
-  .mobileMenu.isOpen .mobileMenuLinks a:nth-child(5){transition-delay:.21s}
-  .mobileMenu.isOpen .mobileMenuLinks a:nth-child(6){transition-delay:.245s}
-  .mobileMenu.isOpen .mobileMenuLinks a:nth-child(7){transition-delay:.28s}
-  .mobileMenuLinks a:active,.mobileMenuLinks a:focus-visible{color:var(--sand)}
-  .mobileMenuSignature{margin:0;border-top:1px solid rgba(253,249,242,.25);padding-top:20px;text-align:center;color:var(--sand);font:italic 18px var(--serif)}
-  .mobileMenuToggle:focus-visible,.mobileMenuClose:focus-visible,.mobileMenuLinks a:focus-visible{outline:2px solid var(--rose);outline-offset:4px}
-
+  .mobileMenuToggle{top:21px;transform:none}
   /* A foto da capa usa suas dimensões naturais no celular, sem recortar topo ou base. */
   .leadMain>.heroPhotoFrame{height:auto;min-height:0;overflow:visible}
   .leadMain>.heroPhotoFrame>img,.leadMain>.heroPhotoFrame>video{position:static!important;inset:auto!important;display:block;width:100%!important;height:auto!important;max-width:100%;object-fit:contain!important;transform:none!important}

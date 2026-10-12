@@ -21,15 +21,6 @@ export async function Header() {
         <Link href="/" className="wordmark" style={style} data-editor="brand.wordmark">{config.brand.wordmark}</Link>
         <span className="signature" data-editor="brand.signature">{config.brand.signature}</span>
       </div>
-      <nav className="nav">
-        <div className="shell navInner">
-          {[
-            ["Moda", "/moda"], ["Beleza", "/beleza"], ["Lifestyle", "/lifestyle"],
-            ["Achados", "/achados"], ["UGC", "/ugc"], ["Sobre", "/sobre"]
-          ].map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}
-          <Link href="/achados" className="navRight">curadoria</Link>
-        </div>
-      </nav>
     </header>
   );
 }
