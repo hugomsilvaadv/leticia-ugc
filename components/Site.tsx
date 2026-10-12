@@ -86,11 +86,10 @@ export function Visual({ kind = "rose", label = "editorial", asset, editorKey }:
 export function Card({ article, compact = false }: { article: Article; compact?: boolean }) {
   return (
     <article className={compact ? "card compact" : "card"}>
-      <Link href={"/artigos/" + article.slug}><Visual kind={article.category.toLowerCase()} label={article.category} /></Link>
+      <Link href={"/artigos/" + article.slug}><Visual kind={article.category.toLowerCase()} label={article.category} asset={article.hero} /></Link>
       <div className="meta"><span>{article.category}</span><span>{article.readTime}</span></div>
       <h3><Link href={"/artigos/" + article.slug}>{article.title}</Link></h3>
       {!compact && <p>{article.dek}</p>}
-      <small>conteúdo demonstrativo</small>
     </article>
   );
 }
