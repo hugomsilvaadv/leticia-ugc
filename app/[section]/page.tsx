@@ -24,6 +24,7 @@ export default async function SectionPage({ params }: { params: Promise<{ sectio
         <article><h3>UGC</h3><p>Depoimentos, reviews, rotina, antes/depois, tutorial, storytelling e espontâneo.</p></article>
         <article><h3>Fotos</h3><p>Produto, uso real, feed, campanha e lifestyle.</p></article>
       </div></section>
+      <section className="portfolio shell"><Visual kind="jewelry" label="semijoias" /><Visual kind="beauty" label="maquiagem" /><Visual kind="look" label="looks" /></section>
       <PortfolioGallery items={portfolio} />
       <section className="why shell"><p className="eyebrow">Por que comigo</p><div><h2>Um olhar que entende o produto antes de apertar o rec.</h2><ul><li>Formação em Design de Moda</li><li>Styling, composição e apresentação</li><li>Comunicação natural diante das câmeras</li><li>Olhar comercial sem perder autenticidade</li><li>Flexibilidade entre criação orgânica e briefing</li></ul></div></section>
     </main>;
@@ -31,7 +32,7 @@ export default async function SectionPage({ params }: { params: Promise<{ sectio
 
   if (section === "sobre") {
     const content = config.pages.about;
-    return <main className="shell about"><section><div><p className="eyebrow">Sobre mim</p><h1 data-editor="pages.about.title">{content.title}</h1><p data-editor="pages.about.firstParagraph">{content.firstParagraph}</p><p data-editor="pages.about.secondParagraph">{content.secondParagraph}</p></div><Visual kind="portrait" label="Letícia Leite" asset={content.portrait} editorKey="pages.about.portrait" /></section><blockquote data-editor="pages.about.quote">{content.quote}</blockquote></main>;
+    return <main className="shell about"><section><div><p className="eyebrow">Sobre mim</p><h1 data-editor="pages.about.title">{content.title}</h1><p data-editor="pages.about.firstParagraph">{content.firstParagraph}</p><p data-editor="pages.about.secondParagraph">{content.secondParagraph}</p></div><Visual kind="portrait" label="Letícia Leite" asset={content.portrait} editorKey="pages.about.portrait" /></section><blockquote data-editor="pages.about.quote">“{content.quote}”</blockquote></main>;
   }
 
   const category = sectionFromSlug(section);
