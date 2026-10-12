@@ -1,0 +1,449 @@
+{
+  "background": {
+    "url": "https://feex0x15zdzfwxo2.public.blob.vercel-storage.com/portfolio-leticia/media/background.jpeg",
+    "opacity": 66,
+    "positionX": 41,
+    "positionY": 40,
+    "zoom": 100,
+    "fit": "cover"
+  },
+  "media": {
+    "profile": {
+      "url": "https://feex0x15zdzfwxo2.public.blob.vercel-storage.com/portfolio-leticia/media/profile.jpeg",
+      "positionX": 50,
+      "positionY": 50,
+      "zoom": 100,
+      "fit": "cover"
+    },
+    "product": {
+      "url": "https://feex0x15zdzfwxo2.public.blob.vercel-storage.com/portfolio-leticia/media/product.jpeg",
+      "positionX": 50,
+      "positionY": 50,
+      "zoom": 101,
+      "fit": "cover"
+    },
+    "unboxing": {
+      "url": "https://feex0x15zdzfwxo2.public.blob.vercel-storage.com/portfolio-leticia/media/unboxing.mp4",
+      "positionX": 50,
+      "positionY": 50,
+      "zoom": 100,
+      "fit": "cover"
+    },
+    "fitting": {
+      "url": "https://feex0x15zdzfwxo2.public.blob.vercel-storage.com/portfolio-leticia/media/fitting.jpeg",
+      "positionX": 45,
+      "positionY": 100,
+      "zoom": 101,
+      "fit": "cover"
+    }
+  },
+  "texts": {
+    "heroKicker": {
+      "text": "UGC Creator • Moda • Beleza • Lifestyle",
+      "font": "Segoe UI",
+      "size": 12,
+      "x": 0,
+      "y": 0,
+      "color": "#d88c88",
+      "weight": 700,
+      "italic": false,
+      "align": "center"
+    },
+    "heroTitle": {
+      "text": "Letícia Leite",
+      "font": "Georgia",
+      "size": 64,
+      "x": 0,
+      "y": 0,
+      "color": "#9c3f3f",
+      "weight": 700,
+      "italic": false,
+      "align": "center"
+    },
+    "heroDescription": {
+      "text": "Conteúdo autêntico, estético e pensado para aproximar marcas de pessoas.",
+      "font": "Segoe UI",
+      "size": 17,
+      "x": 0,
+      "y": 0,
+      "color": "#746d69",
+      "weight": 400,
+      "italic": false,
+      "align": "center"
+    },
+    "heroButtonPortfolio": {
+      "text": "Ver portfólio",
+      "font": "Segoe UI",
+      "size": 14,
+      "x": 0,
+      "y": 0,
+      "color": "#2f2b2a",
+      "weight": 600,
+      "italic": false,
+      "align": "center"
+    },
+    "heroButtonPackages": {
+      "text": "Pacotes & serviços",
+      "font": "Segoe UI",
+      "size": 14,
+      "x": 0,
+      "y": 0,
+      "color": "#2f2b2a",
+      "weight": 600,
+      "italic": false,
+      "align": "center"
+    },
+    "heroButtonContact": {
+      "text": "Falar comigo",
+      "font": "Segoe UI",
+      "size": 14,
+      "x": 0,
+      "y": 0,
+      "color": "#ffffff",
+      "weight": 700,
+      "italic": false,
+      "align": "center"
+    },
+    "portfolioEyebrow": {
+      "text": "Portfólio",
+      "font": "Segoe UI",
+      "size": 12,
+      "x": 0,
+      "y": 0,
+      "color": "#d88c88",
+      "weight": 700,
+      "italic": false,
+      "align": "center"
+    },
+    "portfolioTitle": {
+      "text": "Conteúdo em destaque",
+      "font": "Georgia",
+      "size": 42,
+      "x": 0,
+      "y": 0,
+      "color": "#9c3f3f",
+      "weight": 700,
+      "italic": true,
+      "align": "center"
+    },
+    "portfolioSubtitle": {
+      "text": "Três formatos para apresentar produto, experiência e resultado de forma natural.",
+      "font": "Segoe UI",
+      "size": 16,
+      "x": 0,
+      "y": 0,
+      "color": "#746d69",
+      "weight": 400,
+      "italic": false,
+      "align": "center"
+    },
+    "productType": {
+      "text": "Foto",
+      "font": "Segoe UI",
+      "size": 11,
+      "x": 0,
+      "y": 0,
+      "color": "#d88c88",
+      "weight": 700,
+      "italic": false,
+      "align": "left"
+    },
+    "productLabel": {
+      "text": "Foto do produto",
+      "font": "Georgia",
+      "size": 21,
+      "x": 0,
+      "y": 0,
+      "color": "#2f2b2a",
+      "weight": 700,
+      "italic": false,
+      "align": "left"
+    },
+    "unboxingType": {
+      "text": "Vídeo",
+      "font": "Segoe UI",
+      "size": 11,
+      "x": 0,
+      "y": 0,
+      "color": "#d88c88",
+      "weight": 700,
+      "italic": false,
+      "align": "left"
+    },
+    "unboxingLabel": {
+      "text": "Vídeo de unboxing",
+      "font": "Georgia",
+      "size": 21,
+      "x": 0,
+      "y": 0,
+      "color": "#2f2b2a",
+      "weight": 700,
+      "italic": false,
+      "align": "left"
+    },
+    "fittingType": {
+      "text": "Foto",
+      "font": "Segoe UI",
+      "size": 11,
+      "x": 0,
+      "y": 0,
+      "color": "#d88c88",
+      "weight": 700,
+      "italic": false,
+      "align": "left"
+    },
+    "fittingLabel": {
+      "text": "Foto do provador",
+      "font": "Georgia",
+      "size": 21,
+      "x": 0,
+      "y": 0,
+      "color": "#2f2b2a",
+      "weight": 700,
+      "italic": false,
+      "align": "left"
+    },
+    "servicesEyebrow": {
+      "text": "Pacotes & serviços",
+      "font": "Segoe UI",
+      "size": 12,
+      "x": 0,
+      "y": 0,
+      "color": "#d88c88",
+      "weight": 700,
+      "italic": false,
+      "align": "center"
+    },
+    "servicesTitle": {
+      "text": "Escolha o formato ideal",
+      "font": "Georgia",
+      "size": 42,
+      "x": 0,
+      "y": 0,
+      "color": "#9c3f3f",
+      "weight": 700,
+      "italic": true,
+      "align": "center"
+    },
+    "servicesSubtitle": {
+      "text": "Opções para ações pontuais, presença recorrente e campanhas UGC personalizadas.",
+      "font": "Segoe UI",
+      "size": 16,
+      "x": 0,
+      "y": 0,
+      "color": "#746d69",
+      "weight": 400,
+      "italic": false,
+      "align": "center"
+    },
+    "basicName": {
+      "text": "Plano Básico",
+      "font": "Segoe UI",
+      "size": 12,
+      "x": 0,
+      "y": 0,
+      "color": "#d88c88",
+      "weight": 800,
+      "italic": false,
+      "align": "left"
+    },
+    "basicHighlight": {
+      "text": "Provador avulso",
+      "font": "Georgia",
+      "size": 27,
+      "x": 0,
+      "y": 0,
+      "color": "#2f2b2a",
+      "weight": 700,
+      "italic": false,
+      "align": "left"
+    },
+    "basicDescription": {
+      "text": "Ideal para apresentar peças de forma natural, visual e direta.",
+      "font": "Segoe UI",
+      "size": 14,
+      "x": 0,
+      "y": 0,
+      "color": "#746d69",
+      "weight": 400,
+      "italic": false,
+      "align": "left"
+    },
+    "basicPrice": {
+      "text": "A partir de R$ 200,00",
+      "font": "Georgia",
+      "size": 21,
+      "x": 0,
+      "y": 0,
+      "color": "#9c3f3f",
+      "weight": 700,
+      "italic": false,
+      "align": "left"
+    },
+    "monthlyName": {
+      "text": "Plano Mensal",
+      "font": "Segoe UI",
+      "size": 12,
+      "x": 11,
+      "y": -4,
+      "color": "#d88c88",
+      "weight": 800,
+      "italic": false,
+      "align": "left"
+    },
+    "monthlyHighlight": {
+      "text": "Conteúdo recorrente",
+      "font": "Georgia",
+      "size": 27,
+      "x": 0,
+      "y": 0,
+      "color": "#2f2b2a",
+      "weight": 700,
+      "italic": false,
+      "align": "left"
+    },
+    "monthlyDescription": {
+      "text": "1 provador por semana +  3 fotos de look por semana.",
+      "font": "Segoe UI",
+      "size": 14,
+      "x": 0,
+      "y": 0,
+      "color": "#746d69",
+      "weight": 400,
+      "italic": false,
+      "align": "left"
+    },
+    "monthlyPrice": {
+      "text": "A partir de R$ 900,00",
+      "font": "Georgia",
+      "size": 21,
+      "x": 0,
+      "y": 0,
+      "color": "#9c3f3f",
+      "weight": 700,
+      "italic": false,
+      "align": "left"
+    },
+    "ugcName": {
+      "text": "Plano UGC",
+      "font": "Segoe UI",
+      "size": 12,
+      "x": 0,
+      "y": 0,
+      "color": "#d88c88",
+      "weight": 800,
+      "italic": false,
+      "align": "left"
+    },
+    "ugcHighlight": {
+      "text": "Projeto personalizado",
+      "font": "Georgia",
+      "size": 27,
+      "x": 0,
+      "y": 0,
+      "color": "#2f2b2a",
+      "weight": 700,
+      "italic": false,
+      "align": "left"
+    },
+    "ugcDescription": {
+      "text": "Formato, roteiro e entregas definidos de acordo com a necessidade da marca.",
+      "font": "Segoe UI",
+      "size": 14,
+      "x": 0,
+      "y": 0,
+      "color": "#746d69",
+      "weight": 400,
+      "italic": false,
+      "align": "left"
+    },
+    "ugcPrice": {
+      "text": "Sob consulta",
+      "font": "Georgia",
+      "size": 21,
+      "x": 0,
+      "y": 0,
+      "color": "#9c3f3f",
+      "weight": 700,
+      "italic": false,
+      "align": "left"
+    },
+    "proposalButton": {
+      "text": "Solicitar proposta",
+      "font": "Segoe UI",
+      "size": 14,
+      "x": 0,
+      "y": 0,
+      "color": "#ffffff",
+      "weight": 700,
+      "italic": false,
+      "align": "center"
+    },
+    "footerTitle": {
+      "text": "Vamos trabalhar juntos?",
+      "font": "Georgia",
+      "size": 36,
+      "x": 0,
+      "y": 0,
+      "color": "#ffffff",
+      "weight": 700,
+      "italic": true,
+      "align": "center"
+    },
+    "footerDescription": {
+      "text": "Um conteúdo feito para conectar. Criar é mais do que mostrar. É despertar interesse, identificação e desejo.",
+      "font": "Segoe UI",
+      "size": 18,
+      "x": 0,
+      "y": 0,
+      "color": "#aaaaaa",
+      "weight": 400,
+      "italic": false,
+      "align": "center"
+    },
+    "footerEmail": {
+      "text": "leticialeitecontent@gmail.com",
+      "font": "Georgia",
+      "size": 24,
+      "x": 0,
+      "y": 0,
+      "color": "#ffffff",
+      "weight": 400,
+      "italic": false,
+      "align": "center"
+    },
+    "footerLocation": {
+      "text": "Ribeirão Preto (SP) / Sete Lagoas (MG)",
+      "font": "Segoe UI",
+      "size": 16,
+      "x": 0,
+      "y": 0,
+      "color": "#aaaaaa",
+      "weight": 400,
+      "italic": false,
+      "align": "center"
+    },
+    "footerInstagram": {
+      "text": "@leticiafnda",
+      "font": "Segoe UI",
+      "size": 14,
+      "x": 0,
+      "y": 0,
+      "color": "#ffffff",
+      "weight": 400,
+      "italic": false,
+      "align": "center"
+    },
+    "footerWhatsapp": {
+      "text": "WhatsApp",
+      "font": "Segoe UI",
+      "size": 14,
+      "x": 0,
+      "y": 0,
+      "color": "#ffffff",
+      "weight": 400,
+      "italic": false,
+      "align": "center"
+    }
+  }
+}
