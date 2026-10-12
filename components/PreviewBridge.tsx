@@ -96,7 +96,7 @@ function applyConfig(config: SiteConfig) {
   applyText("pages.about.title", config.pages.about.title);
   applyText("pages.about.firstParagraph", config.pages.about.firstParagraph);
   applyText("pages.about.secondParagraph", config.pages.about.secondParagraph);
-  applyText("pages.about.quote", config.pages.about.quote);
+  applyText("pages.about.quote", `“${config.pages.about.quote}”`);
   applyMedia("pages.about.portrait", config.pages.about.portrait);
   applyText("footer.description", config.footer.description);
 }
