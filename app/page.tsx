@@ -17,10 +17,11 @@ function textStyle(style: TextStyle): CSSProperties {
 
 export default async function Home() {
   const allArticles = (await readArticles()).filter((article) => article.published);
-  const lead = allArticles[0];
-  const second = allArticles[1] ?? lead;
-  const third = allArticles[2] ?? lead;
   const config = await readSiteConfig();
+  const lead = allArticles.find(article => article.slug === config.home.hero.featuredSlug) ?? allArticles[0];
+  const remaining = allArticles.filter(article => article.slug !== lead?.slug);
+  const second = remaining[0];
+  const third = remaining[1];
   const { hero, lookbook, beauty, ugc, newsletter } = config.home;
 
   return (
