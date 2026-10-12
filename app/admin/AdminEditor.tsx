@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { MediaAsset, SiteConfig, TextStyle } from "@/lib/site-config";
 import type { ArticleRecord } from "@/lib/article-store";
 import type { PortfolioItem } from "@/lib/portfolio-store";
+import { getNumberedSections } from "@/lib/article-body";
 
 const fonts = ["Georgia", "Times New Roman", "Arial", "Verdana", "Trebuchet MS", "Garamond", "Courier New"];
 
@@ -51,12 +52,13 @@ function TextControl({
 }
 
 function MediaControl({
-  label, asset, password, onChange,
+  label, asset, password, onChange, imageOnly = false,
 }: {
   label: string;
   asset: MediaAsset;
   password: string;
   onChange: (asset: MediaAsset) => void;
+  imageOnly?: boolean;
 }) {
   const set = <K extends keyof MediaAsset>(key: K, value: MediaAsset[K]) => onChange({ ...asset, [key]: value });
 
@@ -74,7 +76,7 @@ function MediaControl({
 
   return <div className="adminCard">
     <strong>{label}</strong>
-    <input type="file" accept="image/*,video/mp4,video/webm" onChange={e => upload(e.target.files?.[0])} />
+    <input type="file" accept={imageOnly ? "image/jpeg,image/png,image/webp,image/gif" : "image/*,video/mp4,video/webm"} onChange={e => upload(e.target.files?.[0])} />
     <label>URL da mídia
       <input value={asset.url} placeholder="/api/media/foto.jpg ou URL pública" onChange={e => set("url", e.target.value)} />
     </label>
@@ -349,6 +351,7 @@ export default function AdminEditor() {
       publishedAt: new Date().toISOString().slice(0, 10),
       hero: { url: "", positionX: 50, positionY: 50, zoom: 100, opacity: 100, fit: "cover" },
       body: "",
+      sectionMedia: {},
     };
     setArticles(items => [article, ...items]);
     setSelectedSlug(slug);
@@ -430,9 +433,30 @@ export default function AdminEditor() {
 
             <div className="adminCard">
               <strong>Corpo da matéria</strong>
-              <p className="adminHint">Parágrafos: deixe uma linha em branco. Título interno: comece com ##. Citação: comece com &gt;.</p>
+              <p className="adminHint">Parágrafos: deixe uma linha em branco. Título interno: comece com ##. Citação: comece com &gt;. Para criar um bloco de acessório com foto própria, use um título numerado, como 1. Bolsa, seguido pelo texto.</p>
               <textarea className="articleBodyEditor" rows={18} value={selectedArticle.body} onFocus={() => postPreview("article.body")} onChange={e => updateArticle({ body: e.target.value })} />
               {selectedArticle.slug && <a className="adminArticleLink" href={`/artigos/${selectedArticle.slug}`} target="_blank" rel="noreferrer">Abrir esta matéria ↗</a>}
+            </div>
+
+            <div className="adminCard adminArticleSections">
+              <strong>Imagens dentro da matéria</strong>
+              <p className="adminHint">Cada tópico numerado tem sua própria imagem, independente da capa. Abra um item para fazer o upload. A foto aparecerá abaixo do texto recuado assim que você clicar em Salvar e publicar.</p>
+              {getNumberedSections(selectedArticle.body).length === 0
+                ? <p className="adminHint">Nenhum tópico numerado encontrado. No corpo da matéria, crie um parágrafo “1. Nome do item” e, no parágrafo seguinte, sua descrição.</p>
+                : getNumberedSections(selectedArticle.body).map(section => {
+                    const asset = selectedArticle.sectionMedia?.[section.key] ?? { url: "", positionX: 50, positionY: 50, zoom: 100, opacity: 100, fit: "cover" as const };
+                    return <details className="adminArticleSectionItem" key={section.key}>
+                      <summary><span>{section.number}. {section.title}</span><small>{asset.url ? "Imagem adicionada" : "Adicionar imagem"}</small></summary>
+                      <MediaControl
+                        label={`Imagem de ${section.title}`}
+                        asset={asset}
+                        password={password}
+                        imageOnly
+                        onChange={media => updateArticle({ sectionMedia: { ...selectedArticle.sectionMedia, [section.key]: media } })}
+                      />
+                      {asset.url && <button className="adminRemoveSectionImage" type="button" onClick={() => updateArticle({ sectionMedia: { ...selectedArticle.sectionMedia, [section.key]: { ...asset, url: "" } } })}>Retirar esta imagem da matéria</button>}
+                    </details>;
+                  })}
             </div>
 
             <button type="button" className="adminDanger" onClick={deleteArticle}>Excluir matéria</button>

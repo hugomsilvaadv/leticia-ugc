@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import type { ArticleRecord } from "@/lib/article-store";
 import type { MediaAsset, SiteConfig, TextStyle } from "@/lib/site-config";
+import { parseArticleBody, type TextBlock } from "@/lib/article-body";
 
 type PreviewMessage = {
   type: "LETICIA_EDITOR_PREVIEW";
@@ -107,18 +108,52 @@ function formatDate(value: string) {
   return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", year: "numeric" }).format(date);
 }
 
-function applyArticleBody(body: string) {
-  document.querySelectorAll<HTMLElement>('[data-editor-body="article.body"]').forEach((holder) => {
+function createBodyParagraph(block: TextBlock) {
+  const element = document.createElement(block.type === "heading" ? "h2" : block.type === "quote" ? "blockquote" : "p");
+  element.textContent = block.text;
+  return element;
+}
+
+function applyArticleBody(article: ArticleRecord) {
+  document.querySelectorAll<HTMLElement>('[data-editor-body="article.body"]').forEach(holder => {
     holder.replaceChildren();
-    body.split(/\n\s*\n/).filter(Boolean).forEach((block) => {
-      const clean = block.trim();
-      const element = clean.startsWith("## ")
-        ? document.createElement("h2")
-        : clean.startsWith("> ")
-          ? document.createElement("blockquote")
-          : document.createElement("p");
-      element.textContent = clean.startsWith("## ") ? clean.slice(3) : clean.startsWith("> ") ? clean.slice(2) : clean;
-      holder.appendChild(element);
+    parseArticleBody(article.body).forEach(block => {
+      if (block.type !== "numbered") {
+        holder.appendChild(createBodyParagraph(block));
+        return;
+      }
+
+      const section = document.createElement("section");
+      section.className = "articleAccessory";
+      const heading = document.createElement("h2");
+      heading.className = "articleAccessoryTitle";
+      const number = document.createElement("span");
+      number.className = "articleAccessoryNumber";
+      number.textContent = block.number.padStart(2, "0");
+      const title = document.createElement("span");
+      title.textContent = block.title;
+      heading.append(number, title);
+      const indented = document.createElement("div");
+      indented.className = "articleAccessoryIndented";
+      for (const paragraph of block.content) indented.appendChild(createBodyParagraph(paragraph));
+
+      const media = article.sectionMedia?.[block.key];
+      if (media?.url) {
+        const figure = document.createElement("figure");
+        figure.className = "articleAccessoryImage";
+        const img = document.createElement("img");
+        img.src = media.url;
+        img.alt = `Imagem de ${block.title}`;
+        img.loading = "lazy";
+        img.style.objectFit = media.fit;
+        img.style.objectPosition = `${media.positionX}% ${media.positionY}%`;
+        img.style.transform = `scale(${media.zoom / 100})`;
+        img.style.opacity = String(media.opacity / 100);
+        figure.appendChild(img);
+        indented.appendChild(figure);
+      }
+      section.append(heading, indented);
+      holder.appendChild(section);
     });
   });
 }
@@ -130,7 +165,7 @@ function applyArticle(article: ArticleRecord) {
   applyText("article.publishedAt", formatDate(article.publishedAt));
   applyText("article.readTime", `${article.readTime} de leitura`);
   applyMedia("article.hero", article.hero);
-  applyArticleBody(article.body);
+  applyArticleBody(article);
 }
 
 function scrollToEditorKey(key?: string) {

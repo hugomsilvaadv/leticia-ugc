@@ -160,3 +160,30 @@
 @media(prefers-reduced-motion:reduce){
   .mobileMenu,.mobileMenuLinks a{transition:none!important}
 }
+
+/* Artigos com tópicos numerados: recuo editorial e mídia individual opcional. */
+.articleBody .articleAccessory{margin:48px 0 62px;padding-top:22px;border-top:1px solid var(--line)}
+.articleBody .articleAccessoryTitle{display:flex;align-items:baseline;gap:17px;margin:0 0 17px;font-family:var(--serif);font-size:clamp(30px,3.5vw,40px);line-height:1.2;font-weight:500}
+.articleAccessoryNumber{flex:0 0 35px;font:700 13px/1.3 var(--sans);letter-spacing:.1em;color:var(--rose);text-align:right}
+.articleAccessoryIndented{margin-left:24px;padding-left:28px;border-left:1px solid var(--line)}
+.articleAccessoryIndented>p:first-child{margin-top:0}
+.articleAccessoryIndented>p{overflow-wrap:break-word}
+.articleAccessoryImage{margin:28px 0 0;position:relative;aspect-ratio:3/2;background:var(--blush);overflow:hidden}
+.articleAccessoryImage img{width:100%;height:100%;display:block;object-fit:cover;max-width:none}
+.adminArticleSections{gap:12px}
+.adminArticleSectionItem{border:1px solid #ded3ca;background:#fff}
+.adminArticleSectionItem>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;padding:12px 14px;font-size:13px;font-weight:700;list-style:none}
+.adminArticleSectionItem>summary::-webkit-details-marker{display:none}
+.adminArticleSectionItem>summary::before{content:"+";font-size:19px;font-weight:400;color:#7c543d}
+.adminArticleSectionItem[open]>summary::before{content:"−"}
+.adminArticleSectionItem>summary span{flex:1}
+.adminArticleSectionItem>summary small{font-size:10px;font-weight:400;color:#7c543d}
+.adminArticleSectionItem>.adminCard{border:0;border-top:1px solid #ded3ca;margin:0}
+.adminRemoveSectionImage{margin:0 12px 12px;padding:9px 12px;background:transparent;border:1px solid var(--line);color:var(--terracotta);cursor:pointer;font-size:11px}
+@media(max-width:600px){
+  .articleBody .articleAccessory{margin:36px 0 44px;padding-top:17px}
+  .articleBody .articleAccessoryTitle{gap:10px;font-size:clamp(27px,7vw,34px)}
+  .articleAccessoryNumber{flex-basis:28px;font-size:11px}
+  .articleAccessoryIndented{margin-left:10px;padding-left:18px}
+  .articleAccessoryImage{margin-top:20px;aspect-ratio:4/3}
+}

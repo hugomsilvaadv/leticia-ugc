@@ -9,6 +9,7 @@ export type ArticleRecord = Article & {
   publishedAt: string;
   hero: MediaAsset;
   body: string;
+  sectionMedia: Record<string, MediaAsset>;
 };
 
 const emptyHero = (): MediaAsset => ({
@@ -36,6 +37,7 @@ export const DEFAULT_ARTICLES: ArticleRecord[] = seedArticles.map((article) => (
   publishedAt: "2026-09-23",
   hero: emptyHero(),
   body: defaultBody,
+  sectionMedia: {},
 }));
 
 const ARTICLE_PATH = path.join(getDataDir(), "articles.json");
@@ -83,6 +85,9 @@ function normalizeArticle(value: Partial<ArticleRecord>, index: number): Article
     publishedAt: typeof value.publishedAt === "string" && value.publishedAt ? value.publishedAt : new Date().toISOString().slice(0, 10),
     hero: normalizeHero(value.hero),
     body: typeof value.body === "string" ? value.body : "",
+    sectionMedia: value.sectionMedia && typeof value.sectionMedia === "object" && !Array.isArray(value.sectionMedia)
+      ? Object.fromEntries(Object.entries(value.sectionMedia).filter(([key]) => /^\d{1,3}$/.test(key)).map(([key, asset]) => [key, normalizeHero(asset)]))
+      : {},
   };
 }
 
