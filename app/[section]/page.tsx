@@ -31,7 +31,7 @@ export default async function SectionPage({ params }: { params: Promise<{ sectio
 
   if (section === "sobre") {
     const content = config.pages.about;
-    return <main className="shell about"><section><div><p className="eyebrow">Sobre mim</p><h1 data-editor="pages.about.title">{content.title}</h1><p data-editor="pages.about.firstParagraph">{content.firstParagraph}</p><p data-editor="pages.about.secondParagraph">{content.secondParagraph}</p></div><Visual kind="portrait" label="Letícia Leite" asset={content.portrait} editorKey="pages.about.portrait" /></section><blockquote data-editor="pages.about.quote">{content.quote}</blockquote></main>;
+    return <main className="shell about"><section><div><p className="eyebrow">Sobre mim</p><h1 data-editor="pages.about.title">{content.title}</h1><p data-editor="pages.about.firstParagraph">{content.firstParagraph}</p><p data-editor="pages.about.secondParagraph">{content.secondParagraph}</p></div><Visual kind="portrait" label="Letícia Leite" asset={content.portrait} editorKey="pages.about.portrait" /></section><blockquote data-editor="pages.about.quote">“{content.quote}”</blockquote></main>;
   }
 
   const category = sectionFromSlug(section);
