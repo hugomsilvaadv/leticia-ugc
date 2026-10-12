@@ -32,6 +32,7 @@ export type SiteConfig = {
   };
   home: {
     hero: {
+      featuredSlug: string;
       eyebrow: string;
       title: string;
       dek: string;
@@ -81,6 +82,10 @@ export type SiteConfig = {
   footer: {
     description: string;
   };
+  pages: {
+    ugc: { title: string; intro: string; portrait: MediaAsset };
+    about: { title: string; firstParagraph: string; secondParagraph: string; quote: string; portrait: MediaAsset };
+  };
 };
 
 const text = (fontFamily: string, fontSize: number, align: TextAlign = "left"): TextStyle => ({
@@ -109,6 +114,7 @@ export const DEFAULT_CONFIG: SiteConfig = {
   },
   home: {
     hero: {
+      featuredSlug: "",
       eyebrow: "Em destaque · Moda",
       title: "Camadas sem excesso: um guia visual para a meia-estação",
       dek: "Proporção, textura e fórmulas simples para montar looks que parecem pensados sem perder conforto.",
@@ -157,6 +163,20 @@ export const DEFAULT_CONFIG: SiteConfig = {
   },
   footer: {
     description: "Moda, criatividade e comunicação para transformar produtos em experiências.",
+  },
+  pages: {
+    ugc: {
+      title: "Conteúdo com repertório de moda e intenção comercial.",
+      intro: "Minha formação em Design de Moda me permite pensar composição, styling, tendência e apresentação de produto. A entrega pode ser orgânica ou seguir o briefing com precisão.",
+      portrait: media(""),
+    },
+    about: {
+      title: "Moda sempre foi linguagem.",
+      firstParagraph: "A criatividade sempre fez parte de quem eu sou. Desde pequena, escolhia tecidos e desenhava minhas próprias roupas. Hoje, transformo essa paixão em conteúdo, unindo meu olhar criativo ao universo da moda, beleza e lifestyle.",
+      secondParagraph: "Amo descobrir novas marcas, experimentar produtos e compartilhar referências de forma leve, autêntica e próxima.",
+      quote: "Criar é mais do que mostrar. É despertar interesse, identificação e desejo.",
+      portrait: media(""),
+    },
   },
 };
 
@@ -209,6 +229,7 @@ export function normalizeConfig(input?: Partial<SiteConfig> | null): SiteConfig 
     },
     home: {
       hero: {
+        featuredSlug: str(hero?.featuredSlug, ""),
         eyebrow: str(hero?.eyebrow, DEFAULT_CONFIG.home.hero.eyebrow),
         title: str(hero?.title, DEFAULT_CONFIG.home.hero.title),
         dek: str(hero?.dek, DEFAULT_CONFIG.home.hero.dek),
@@ -257,6 +278,20 @@ export function normalizeConfig(input?: Partial<SiteConfig> | null): SiteConfig 
     },
     footer: {
       description: str(input?.footer?.description, DEFAULT_CONFIG.footer.description),
+    },
+    pages: {
+      ugc: {
+        title: str(input?.pages?.ugc?.title, DEFAULT_CONFIG.pages.ugc.title),
+        intro: str(input?.pages?.ugc?.intro, DEFAULT_CONFIG.pages.ugc.intro),
+        portrait: normalizeMedia(input?.pages?.ugc?.portrait, DEFAULT_CONFIG.pages.ugc.portrait),
+      },
+      about: {
+        title: str(input?.pages?.about?.title, DEFAULT_CONFIG.pages.about.title),
+        firstParagraph: str(input?.pages?.about?.firstParagraph, DEFAULT_CONFIG.pages.about.firstParagraph),
+        secondParagraph: str(input?.pages?.about?.secondParagraph, DEFAULT_CONFIG.pages.about.secondParagraph),
+        quote: str(input?.pages?.about?.quote, DEFAULT_CONFIG.pages.about.quote),
+        portrait: normalizeMedia(input?.pages?.about?.portrait, DEFAULT_CONFIG.pages.about.portrait),
+      },
     },
   };
 }

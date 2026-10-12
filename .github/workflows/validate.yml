@@ -1,0 +1,21 @@
+name: Validate site
+on:
+  push:
+    branches: [main, "fix/**"]
+  pull_request:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: ""
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Type check and production build
+        run: npm run build

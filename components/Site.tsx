@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
-import { Article } from "@/lib/content";
+import type { ArticleRecord } from "@/lib/article-store";
 import { readSiteConfig, type MediaAsset } from "@/lib/site-config";
 
 export async function Header() {
@@ -83,14 +83,13 @@ export function Visual({ kind = "rose", label = "editorial", asset, editorKey }:
   return <div data-editor-media={editorKey} className={"visual " + kind}><span>{label}</span></div>;
 }
 
-export function Card({ article, compact = false }: { article: Article; compact?: boolean }) {
+export function Card({ article, compact = false }: { article: ArticleRecord; compact?: boolean }) {
   return (
     <article className={compact ? "card compact" : "card"}>
-      <Link href={"/artigos/" + article.slug}><Visual kind={article.category.toLowerCase()} label={article.category} /></Link>
+      <Link href={"/artigos/" + article.slug}><Visual kind={article.category.toLowerCase()} label={article.category} asset={article.hero} /></Link>
       <div className="meta"><span>{article.category}</span><span>{article.readTime}</span></div>
       <h3><Link href={"/artigos/" + article.slug}>{article.title}</Link></h3>
       {!compact && <p>{article.dek}</p>}
-      <small>conteúdo demonstrativo</small>
     </article>
   );
 }
@@ -109,6 +108,6 @@ export function Newsletter({ eyebrow = "Carta da Letícia", title = "Moda, belez
   );
 }
 
-export function Latest({ articles }: { articles: Article[] }) {
+export function Latest({ articles }: { articles: ArticleRecord[] }) {
   return <div className="articleGrid">{articles.slice(2).map(a => <Card key={a.slug} article={a} />)}</div>;
 }
