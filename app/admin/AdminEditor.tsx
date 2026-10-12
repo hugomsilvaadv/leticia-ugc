@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { MediaAsset, SiteConfig, TextStyle } from "@/lib/site-config";
 import type { ArticleRecord } from "@/lib/article-store";
+import type { PortfolioItem } from "@/lib/portfolio-store";
 
 const fonts = ["Georgia", "Times New Roman", "Arial", "Verdana", "Trebuchet MS", "Garamond", "Courier New"];
 
@@ -108,12 +109,16 @@ export default function AdminEditor() {
   const [saving, setSaving] = useState(false);
   const [articles, setArticles] = useState<ArticleRecord[]>([]);
   const [articlesLoaded, setArticlesLoaded] = useState(false);
+  const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
+  const [portfolioLoaded, setPortfolioLoaded] = useState(false);
+  const [selectedPortfolioId, setSelectedPortfolioId] = useState("");
   const [selectedSlug, setSelectedSlug] = useState("");
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
   const [previewScale, setPreviewScale] = useState(1);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const previewHostRef = useRef<HTMLDivElement>(null);
   const selectedArticle = articles.find(article => article.slug === selectedSlug) ?? null;
+  const selectedPortfolio = portfolio.find(item => item.id === selectedPortfolioId) ?? null;
 
   useEffect(() => {
     fetch("/api/site-config", { cache: "no-store" })
@@ -129,6 +134,14 @@ export default function AdminEditor() {
         setArticlesLoaded(true);
       })
       .catch(() => setStatus("Site carregado, mas houve erro ao carregar os artigos."));
+    fetch("/api/portfolio", { cache: "no-store" })
+      .then(r => r.json())
+      .then((data: PortfolioItem[]) => {
+        setPortfolio(data);
+        setSelectedPortfolioId(data[0]?.id || "");
+        setPortfolioLoaded(true);
+      })
+      .catch(() => setStatus("Erro ao carregar o portfólio."));
   }, []);
 
   useEffect(() => {
@@ -151,6 +164,8 @@ export default function AdminEditor() {
     if (!config) return;
     const scrollKeyByTab: Record<string, string> = {
       artigos: "article.title",
+      "pagina-ugc": "pages.ugc.title",
+      "pagina-sobre": "pages.about.title",
       marca: "brand.wordmark",
       hero: "home.hero.title",
       lookbook: "home.lookbook.title",
@@ -175,10 +190,26 @@ export default function AdminEditor() {
     return () => window.cancelAnimationFrame(frame);
   }, [config, selectedArticle, tab]);
 
-  const tabs = useMemo(() => [
-    ["artigos", "Artigos"], ["marca", "Marca"], ["hero", "Destaque"], ["lookbook", "Looks"], ["beauty", "Beleza"],
-    ["ugc", "UGC"], ["newsletter", "Newsletter"], ["footer", "Rodapé"],
+  const tabGroups = useMemo(() => [
+    { label: "Conteúdo e publicações", tabs: [["artigos", "Matérias e capas"], ["portfolio", "Fotos e vídeos UGC"]] },
+    { label: "Página inicial", tabs: [["hero", "Destaque da capa"], ["lookbook", "Looks"], ["beauty", "Beleza"], ["ugc", "Faixa UGC"], ["newsletter", "Newsletter"]] },
+    { label: "Páginas internas", tabs: [["pagina-ugc", "Página UGC"], ["pagina-sobre", "Página Sobre"]] },
+    { label: "Identidade", tabs: [["marca", "Marca e cabeçalho"], ["footer", "Rodapé"]] },
   ], []);
+
+  const tabInfo: Record<string, { title: string; description: string; href: string }> = {
+    artigos: { title: "Matérias do blog", description: "A capa da matéria aparece em seus cards na página inicial e nas editorias.", href: "/moda" },
+    portfolio: { title: "Portfólio — fotos e vídeos", description: "Adicione fotos, vídeos MP4/WebM ou links públicos do YouTube, Vimeo ou Instagram. Publique e salve para aparecer na página UGC.", href: "/ugc#portfolio" },
+    hero: { title: "Destaque principal da capa", description: "Foto e texto do topo do site, com escolha da matéria vinculada ao botão.", href: "/" },
+    lookbook: { title: "Looks da semana", description: "Bloco de imagem e texto da página inicial, abaixo da editoria Moda.", href: "/" },
+    beauty: { title: "Beleza na capa", description: "Bloco de beleza da página inicial, não a página inteira da editoria.", href: "/" },
+    ugc: { title: "Faixa UGC da página inicial", description: "Edite o convite para o portfólio na capa. A página UGC e a galeria têm seções próprias.", href: "/" },
+    newsletter: { title: "Chamada da newsletter", description: "Edite o texto da capa. O cadastro de e-mails requer uma integração de envio.", href: "/" },
+    "pagina-ugc": { title: "Página UGC", description: "Título, apresentação e foto em /ugc; o portfólio é editado separadamente.", href: "/ugc" },
+    "pagina-sobre": { title: "Página Sobre", description: "Biografia, foto e citação da Letícia em /sobre.", href: "/sobre" },
+    marca: { title: "Identidade do site", description: "Nome e cabeçalho exibidos em todas as páginas.", href: "/" },
+    footer: { title: "Rodapé", description: "Descrição exibida em todas as páginas.", href: "/" },
+  };
 
   async function save() {
     if (!config) return;
@@ -216,8 +247,23 @@ export default function AdminEditor() {
       }
     }
 
+    if (portfolioLoaded) {
+      const response = await fetch("/api/portfolio", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "x-admin-password": password },
+        body: JSON.stringify(portfolio),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setSaving(false);
+        setStatus(data.error || "Site salvo, mas houve erro ao salvar o portfólio.");
+        return;
+      }
+      setPortfolio(data);
+    }
     setSaving(false);
     setStatus("Alterações publicadas.");
+    iframeRef.current?.contentWindow?.location.reload();
   }
 
   if (!config) return <div className="adminOverlay"><div className="adminLoading">{status}</div></div>;
@@ -226,11 +272,42 @@ export default function AdminEditor() {
   const setHome = <K extends keyof SiteConfig["home"]>(key: K, patch: Partial<SiteConfig["home"][K]>) =>
     setConfig({ ...config, home: { ...config.home, [key]: { ...config.home[key], ...patch } } });
   const setFooter = (patch: Partial<SiteConfig["footer"]>) => setConfig({ ...config, footer: { ...config.footer, ...patch } });
+  const setPage = <K extends keyof SiteConfig["pages"]>(key: K, patch: Partial<SiteConfig["pages"][K]>) =>
+    setConfig({ ...config, pages: { ...config.pages, [key]: { ...config.pages[key], ...patch } } });
+  const updatePortfolio = (patch: Partial<PortfolioItem>) =>
+    setPortfolio(items => items.map(item => item.id === selectedPortfolioId ? { ...item, ...patch } : item));
+  const addPortfolio = () => {
+    const id = crypto.randomUUID();
+    const item: PortfolioItem = { id, title: "Novo trabalho", description: "", type: "Vídeo", published: false,
+      media: { url: "", positionX: 50, positionY: 50, zoom: 100, opacity: 100, fit: "cover" } };
+    setPortfolio(items => [...items, item]);
+    setSelectedPortfolioId(id);
+  };
+  const removePortfolio = () => {
+    if (!selectedPortfolio || !window.confirm("Excluir este trabalho ao salvar?")) return;
+    const next = portfolio.filter(item => item.id !== selectedPortfolio.id);
+    setPortfolio(next);
+    setSelectedPortfolioId(next[0]?.id || "");
+  };
+  const movePortfolio = (shift: number) => {
+    const index = portfolio.findIndex(item => item.id === selectedPortfolioId);
+    const target = index + shift;
+    if (index < 0 || target < 0 || target >= portfolio.length) return;
+    const next = [...portfolio];
+    [next[index], next[target]] = [next[target], next[index]];
+    setPortfolio(next);
+  };
 
   const h = config.home;
   const previewWidth = previewMode === "desktop" ? 1440 : 390;
   const previewHeight = previewMode === "desktop" ? 900 : 844;
-  const previewSrc = tab === "artigos" ? "/editor-preview/article?editorPreview=1" : "/?editorPreview=1";
+  const previewSrc = tab === "artigos"
+    ? "/editor-preview/article?editorPreview=1"
+    : tab === "portfolio" || tab === "pagina-ugc"
+      ? "/ugc?editorPreview=1"
+      : tab === "pagina-sobre"
+        ? "/sobre?editorPreview=1"
+        : "/?editorPreview=1";
 
   const postPreview = (scrollKey?: string) => {
     iframeRef.current?.contentWindow?.postMessage(
