@@ -90,6 +90,14 @@ function applyConfig(config: SiteConfig) {
 
   applyText("home.newsletter.eyebrow", config.home.newsletter.eyebrow, config.home.newsletter.eyebrowStyle);
   applyText("home.newsletter.title", config.home.newsletter.title, config.home.newsletter.titleStyle);
+  applyText("pages.ugc.title", config.pages.ugc.title);
+  applyText("pages.ugc.intro", config.pages.ugc.intro);
+  applyMedia("pages.ugc.portrait", config.pages.ugc.portrait);
+  applyText("pages.about.title", config.pages.about.title);
+  applyText("pages.about.firstParagraph", config.pages.about.firstParagraph);
+  applyText("pages.about.secondParagraph", config.pages.about.secondParagraph);
+  applyText("pages.about.quote", config.pages.about.quote);
+  applyMedia("pages.about.portrait", config.pages.about.portrait);
   applyText("footer.description", config.footer.description);
 }
 
