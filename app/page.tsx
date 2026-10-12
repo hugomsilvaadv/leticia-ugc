@@ -28,7 +28,7 @@ export default async function Home() {
     <main>
       {lead && <section className="lead shell">
         <div className="leadMain">
-          <Visual kind="hero" label="Letícia Leite · moda & estilo" asset={hero.media} editorKey="home.hero.media" />
+          <Visual kind="hero" label="Letícia Leite · moda & estilo" asset={hero.media.url ? hero.media : lead.hero} editorKey="home.hero.media" />
           <div className="leadCopy">
             <p className="eyebrow" style={textStyle(hero.eyebrowStyle)} data-editor="home.hero.eyebrow">{hero.eyebrow}</p>
             <h1 style={textStyle(hero.titleStyle)} data-editor="home.hero.title"><Link href={"/artigos/" + lead.slug}>{hero.title}</Link></h1>
