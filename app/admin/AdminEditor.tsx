@@ -366,12 +366,23 @@ export default function AdminEditor() {
         <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="A mesma senha do Linktree" />
       </label>
 
-      <nav className="adminTabs">
-        {tabs.map(([id, label]) => <button key={id} className={tab === id ? "active" : ""} onClick={() => setTab(id)}>{label}</button>)}
+      <nav className="adminTabs" aria-label="Seções do editor">
+        {tabGroups.map(group => <div className="adminTabGroup" key={group.label}>
+          <strong>{group.label}</strong>
+          <div className="adminTabItems">{group.tabs.map(([id, label]) =>
+            <button type="button" key={id} className={tab === id ? "active" : ""} onClick={() => setTab(id)}>{label}</button>
+          )}</div>
+        </div>)}
       </nav>
 
+      <div className="adminSectionInfo">
+        <strong>{tabInfo[tab]?.title}</strong>
+        <p>{tabInfo[tab]?.description}</p>
+        <a href={tabInfo[tab]?.href} target="_blank" rel="noreferrer">Abrir página correspondente ↗</a>
+      </div>
       <div className="adminControls">
         {tab === "artigos" && <div className="articleAdmin">
+          <p className="adminHint">A capa da matéria é a mesma usada nos cards da página inicial e das editorias.</p>
           <div className="articleAdminHeader">
             <button type="button" className="adminPrimarySmall" onClick={createArticle}>+ Novo artigo</button>
             <span>{articles.length} artigo(s)</span>
@@ -420,6 +431,52 @@ export default function AdminEditor() {
           </>}
         </div>}
 
+        {tab === "portfolio" && <div className="articleAdmin">
+          <div className="articleAdminHeader"><button type="button" className="adminPrimarySmall" onClick={addPortfolio}>+ Adicionar trabalho</button><span>{portfolio.length} trabalho(s)</span></div>
+          <div className="adminCard">
+            <strong>Escolha o trabalho</strong>
+            <select value={selectedPortfolioId} onChange={e => setSelectedPortfolioId(e.target.value)}>
+              {portfolio.map((item, index) => <option key={item.id} value={item.id}>{index + 1}. {item.published ? "●" : "○"} {item.title}</option>)}
+            </select>
+            {portfolio.length === 0 && <p className="adminHint">Clique em Adicionar trabalho para começar.</p>}
+          </div>
+          {selectedPortfolio && <>
+            <div className="adminCard">
+              <strong>Informações do trabalho</strong>
+              <label className="adminCheck"><input type="checkbox" checked={selectedPortfolio.published} onChange={e => updatePortfolio({ published: e.target.checked })} /> Publicar no site</label>
+              <label>Tipo<select value={selectedPortfolio.type} onChange={e => updatePortfolio({ type: e.target.value as PortfolioItem["type"] })}><option value="Vídeo">Vídeo</option><option value="Foto">Foto</option></select></label>
+              <label>Título<input value={selectedPortfolio.title} onChange={e => updatePortfolio({ title: e.target.value })} /></label>
+              <label>Descrição<textarea rows={3} value={selectedPortfolio.description} onChange={e => updatePortfolio({ description: e.target.value })} /></label>
+            </div>
+            <MediaControl label="Arquivo ou link do vídeo/foto" asset={selectedPortfolio.media} password={password} onChange={media => updatePortfolio({ media })} />
+            <p className="adminHint">Vídeos: MP4 ou WebM até 30 MB, ou URL pública do YouTube, Vimeo ou Instagram. Clique em Salvar e publicar para atualizar a galeria.</p>
+            <div className="portfolioEditorActions">
+              <button type="button" onClick={() => movePortfolio(-1)}>↑ Subir</button>
+              <button type="button" onClick={() => movePortfolio(1)}>↓ Descer</button>
+              <button type="button" className="adminDanger" onClick={removePortfolio}>Excluir trabalho</button>
+            </div>
+          </>}
+        </div>}
+
+        {tab === "pagina-ugc" && <>
+          <div className="adminCard"><strong>Apresentação da página UGC</strong>
+            <label>Título<textarea rows={3} value={config.pages.ugc.title} onChange={e => setPage("ugc", { title: e.target.value })} /></label>
+            <label>Texto de apresentação<textarea rows={6} value={config.pages.ugc.intro} onChange={e => setPage("ugc", { intro: e.target.value })} /></label>
+          </div>
+          <MediaControl label="Foto principal da página UGC" asset={config.pages.ugc.portrait} password={password} onChange={portrait => setPage("ugc", { portrait })} />
+          <p className="adminHint">Edite os vídeos e fotos em Conteúdo e publicações → Fotos e vídeos UGC.</p>
+        </>}
+
+        {tab === "pagina-sobre" && <>
+          <div className="adminCard"><strong>Sobre a Letícia</strong>
+            <label>Título<input value={config.pages.about.title} onChange={e => setPage("about", { title: e.target.value })} /></label>
+            <label>Primeiro parágrafo<textarea rows={6} value={config.pages.about.firstParagraph} onChange={e => setPage("about", { firstParagraph: e.target.value })} /></label>
+            <label>Segundo parágrafo<textarea rows={5} value={config.pages.about.secondParagraph} onChange={e => setPage("about", { secondParagraph: e.target.value })} /></label>
+            <label>Citação<textarea rows={3} value={config.pages.about.quote} onChange={e => setPage("about", { quote: e.target.value })} /></label>
+          </div>
+          <MediaControl label="Foto da página Sobre" asset={config.pages.about.portrait} password={password} onChange={portrait => setPage("about", { portrait })} />
+        </>}
+
         {tab === "marca" && <>
           <div className="adminCard"><strong>Linha superior</strong><input value={config.brand.utility} onChange={e => setBrand({ utility: e.target.value })} /></div>
           <TextControl label="Nome / marca" value={config.brand.wordmark} style={config.brand.wordmarkStyle}
@@ -428,6 +485,14 @@ export default function AdminEditor() {
         </>}
 
         {tab === "hero" && <>
+          <div className="adminCard">
+            <strong>Matéria vinculada ao destaque</strong>
+            <p className="adminHint">Define o destino do botão Ler matéria. O título e resumo abaixo são independentes. Para usar a capa da matéria, deixe vazia a URL da foto principal.</p>
+            <select value={h.hero.featuredSlug} onChange={e => setHome("hero", { featuredSlug: e.target.value })}>
+              <option value="">Automático: primeira matéria publicada</option>
+              {articles.filter(a => a.published).map(a => <option key={a.slug} value={a.slug}>{a.title}</option>)}
+            </select>
+          </div>
           <TextControl label="Chamada pequena" value={h.hero.eyebrow} style={h.hero.eyebrowStyle}
             onValue={eyebrow => setHome("hero", { eyebrow })} onStyle={eyebrowStyle => setHome("hero", { eyebrowStyle })} />
           <TextControl label="Título principal" value={h.hero.title} style={h.hero.titleStyle} multiline
@@ -492,8 +557,8 @@ export default function AdminEditor() {
     <main className="adminPreview">
       <div className="adminPreviewToolbar">
         <div>
-          <strong>{tab === "artigos" ? "Prévia da matéria" : "Prévia real do site"}</strong>
-          <span>{tab === "artigos" ? "A matéria selecionada muda aqui enquanto você edita." : "A prévia acompanha automaticamente a seção selecionada."}</span>
+          <strong>{tab === "artigos" ? "Prévia da matéria" : "Prévia da página correspondente"}</strong>
+          <span>{tab === "artigos" ? "A matéria muda aqui enquanto você edita." : "Textos e fotos atualizam na prévia. A galeria atualiza após salvar."}</span>
         </div>
         <div className="previewModeButtons">
           <button className={previewMode === "desktop" ? "active" : ""} onClick={() => setPreviewMode("desktop")}>Desktop</button>
@@ -504,7 +569,7 @@ export default function AdminEditor() {
       <div className="previewBrowser">
         <div className="previewBar">
           <i /><i /><i />
-          <span>{tab === "artigos" && selectedArticle ? `/artigos/${selectedArticle.slug}` : "leticia-ugc-production.up.railway.app"}</span>
+          <span>{tab === "artigos" && selectedArticle ? `/artigos/${selectedArticle.slug}` : tabInfo[tab]?.href}</span>
         </div>
         <div className="previewViewport" ref={previewHostRef}>
           <iframe
