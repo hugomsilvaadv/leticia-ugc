@@ -1,6 +1,8 @@
+import { assertMatchingShape } from "@/lib/validation";
 import { unstable_noStore as noStore } from "next/cache";
-import { createHash } from "node:crypto";
-import fs from "node:fs/promises";
+import { createHash, timingSafeEqual } from "node:crypto";
+import { readJsonFile, writeJsonFile, mergeObjects } from "@/lib/json-store";
+import { assertSafeMedia } from "@/lib/media";
 import path from "node:path";
 
 export type FitMode = "cover" | "contain";
@@ -21,6 +23,10 @@ export type MediaAsset = {
   zoom: number;
   opacity: number;
   fit: FitMode;
+  mobile?: { positionX: number; positionY: number; fit: FitMode };
+  poster?: string;
+  width?: number;
+  height?: number;
 };
 
 export type SiteConfig = {
@@ -84,11 +90,21 @@ export type SiteConfig = {
   };
   pages: {
     ugc: { title: string; intro: string; portrait: MediaAsset };
-    about: { title: string; firstParagraph: string; secondParagraph: string; quote: string; portrait: MediaAsset };
+    about: {
+      title: string;
+      firstParagraph: string;
+      secondParagraph: string;
+      quote: string;
+      portrait: MediaAsset;
+    };
   };
 };
 
-const text = (fontFamily: string, fontSize: number, align: TextAlign = "left"): TextStyle => ({
+const text = (
+  fontFamily: string,
+  fontSize: number,
+  align: TextAlign = "left",
+): TextStyle => ({
   fontFamily,
   fontSize,
   x: 0,
@@ -137,7 +153,8 @@ export const DEFAULT_CONFIG: SiteConfig = {
     beauty: {
       eyebrow: "Beleza",
       title: "Testados, favoritos e acabamento",
-      intro: "Beleza entra como extensão do estilo: textura, cor, rotina e produto vistos sem promessa exagerada.",
+      intro:
+        "Beleza entra como extensão do estilo: textura, cor, rotina e produto vistos sem promessa exagerada.",
       media: media(""),
       eyebrowStyle: text("Arial", 11),
       titleStyle: text("Georgia", 62),
@@ -162,19 +179,24 @@ export const DEFAULT_CONFIG: SiteConfig = {
     },
   },
   footer: {
-    description: "Moda, criatividade e comunicação para transformar produtos em experiências.",
+    description:
+      "Moda, criatividade e comunicação para transformar produtos em experiências.",
   },
   pages: {
     ugc: {
       title: "Conteúdo com repertório de moda e intenção comercial.",
-      intro: "Minha formação em Design de Moda me permite pensar composição, styling, tendência e apresentação de produto. A entrega pode ser orgânica ou seguir o briefing com precisão.",
+      intro:
+        "Minha formação em Design de Moda me permite pensar composição, styling, tendência e apresentação de produto. A entrega pode ser orgânica ou seguir o briefing com precisão.",
       portrait: media(""),
     },
     about: {
       title: "Moda sempre foi linguagem.",
-      firstParagraph: "A criatividade sempre fez parte de quem eu sou. Desde pequena, escolhia tecidos e desenhava minhas próprias roupas. Hoje, transformo essa paixão em conteúdo, unindo meu olhar criativo ao universo da moda, beleza e lifestyle.",
-      secondParagraph: "Amo descobrir novas marcas, experimentar produtos e compartilhar referências de forma leve, autêntica e próxima.",
-      quote: "Criar é mais do que mostrar. É despertar interesse, identificação e desejo.",
+      firstParagraph:
+        "A criatividade sempre fez parte de quem eu sou. Desde pequena, escolhia tecidos e desenhava minhas próprias roupas. Hoje, transformo essa paixão em conteúdo, unindo meu olhar criativo ao universo da moda, beleza e lifestyle.",
+      secondParagraph:
+        "Amo descobrir novas marcas, experimentar produtos e compartilhar referências de forma leve, autêntica e próxima.",
+      quote:
+        "Criar é mais do que mostrar. É despertar interesse, identificação e desejo.",
       portrait: media(""),
     },
   },
@@ -185,21 +207,37 @@ const CONFIG_PATH = path.join(DATA_DIR, "site-config.json");
 
 function num(value: unknown, fallback: number, min: number, max: number) {
   const parsed = Number(value);
-  return Number.isFinite(parsed) ? Math.min(max, Math.max(min, parsed)) : fallback;
+  return Number.isFinite(parsed)
+    ? Math.min(max, Math.max(min, parsed))
+    : fallback;
 }
 
-function normalizeStyle(value: Partial<TextStyle> | undefined, fallback: TextStyle): TextStyle {
+function normalizeStyle(
+  value: Partial<TextStyle> | undefined,
+  fallback: TextStyle,
+): TextStyle {
   return {
-    fontFamily: typeof value?.fontFamily === "string" && value.fontFamily ? value.fontFamily : fallback.fontFamily,
+    fontFamily:
+      typeof value?.fontFamily === "string" && value.fontFamily
+        ? value.fontFamily
+        : fallback.fontFamily,
     fontSize: num(value?.fontSize, fallback.fontSize, 9, 120),
     x: num(value?.x, fallback.x, -120, 120),
     y: num(value?.y, fallback.y, -120, 120),
-    align: value?.align === "center" || value?.align === "right" ? value.align : "left",
+    align:
+      value?.align === "center" || value?.align === "right"
+        ? value.align
+        : "left",
   };
 }
 
-function normalizeMedia(value: Partial<MediaAsset> | undefined, fallback: MediaAsset): MediaAsset {
+function normalizeMedia(
+  value: Partial<MediaAsset> | undefined,
+  fallback: MediaAsset,
+): MediaAsset {
   return {
+    ...fallback,
+    ...value,
     url: typeof value?.url === "string" ? value.url : fallback.url,
     positionX: num(value?.positionX, fallback.positionX, 0, 100),
     positionY: num(value?.positionY, fallback.positionY, 0, 100),
@@ -209,9 +247,12 @@ function normalizeMedia(value: Partial<MediaAsset> | undefined, fallback: MediaA
   };
 }
 
-const str = (value: unknown, fallback: string) => typeof value === "string" ? value : fallback;
+const str = (value: unknown, fallback: string) =>
+  typeof value === "string" ? value : fallback;
 
-export function normalizeConfig(input?: Partial<SiteConfig> | null): SiteConfig {
+export function normalizeConfig(
+  input?: Partial<SiteConfig> | null,
+): SiteConfig {
   const b = input?.brand;
   const h = input?.home;
   const hero = h?.hero;
@@ -225,7 +266,10 @@ export function normalizeConfig(input?: Partial<SiteConfig> | null): SiteConfig 
       utility: str(b?.utility, DEFAULT_CONFIG.brand.utility),
       wordmark: str(b?.wordmark, DEFAULT_CONFIG.brand.wordmark),
       signature: str(b?.signature, DEFAULT_CONFIG.brand.signature),
-      wordmarkStyle: normalizeStyle(b?.wordmarkStyle, DEFAULT_CONFIG.brand.wordmarkStyle),
+      wordmarkStyle: normalizeStyle(
+        b?.wordmarkStyle,
+        DEFAULT_CONFIG.brand.wordmarkStyle,
+      ),
     },
     home: {
       hero: {
@@ -235,62 +279,140 @@ export function normalizeConfig(input?: Partial<SiteConfig> | null): SiteConfig 
         dek: str(hero?.dek, DEFAULT_CONFIG.home.hero.dek),
         buttonText: str(hero?.buttonText, DEFAULT_CONFIG.home.hero.buttonText),
         media: normalizeMedia(hero?.media, DEFAULT_CONFIG.home.hero.media),
-        eyebrowStyle: normalizeStyle(hero?.eyebrowStyle, DEFAULT_CONFIG.home.hero.eyebrowStyle),
-        titleStyle: normalizeStyle(hero?.titleStyle, DEFAULT_CONFIG.home.hero.titleStyle),
-        dekStyle: normalizeStyle(hero?.dekStyle, DEFAULT_CONFIG.home.hero.dekStyle),
+        eyebrowStyle: normalizeStyle(
+          hero?.eyebrowStyle,
+          DEFAULT_CONFIG.home.hero.eyebrowStyle,
+        ),
+        titleStyle: normalizeStyle(
+          hero?.titleStyle,
+          DEFAULT_CONFIG.home.hero.titleStyle,
+        ),
+        dekStyle: normalizeStyle(
+          hero?.dekStyle,
+          DEFAULT_CONFIG.home.hero.dekStyle,
+        ),
       },
       lookbook: {
         eyebrow: str(lookbook?.eyebrow, DEFAULT_CONFIG.home.lookbook.eyebrow),
         title: str(lookbook?.title, DEFAULT_CONFIG.home.lookbook.title),
         body: str(lookbook?.body, DEFAULT_CONFIG.home.lookbook.body),
-        buttonText: str(lookbook?.buttonText, DEFAULT_CONFIG.home.lookbook.buttonText),
-        media: normalizeMedia(lookbook?.media, DEFAULT_CONFIG.home.lookbook.media),
-        eyebrowStyle: normalizeStyle(lookbook?.eyebrowStyle, DEFAULT_CONFIG.home.lookbook.eyebrowStyle),
-        titleStyle: normalizeStyle(lookbook?.titleStyle, DEFAULT_CONFIG.home.lookbook.titleStyle),
-        bodyStyle: normalizeStyle(lookbook?.bodyStyle, DEFAULT_CONFIG.home.lookbook.bodyStyle),
+        buttonText: str(
+          lookbook?.buttonText,
+          DEFAULT_CONFIG.home.lookbook.buttonText,
+        ),
+        media: normalizeMedia(
+          lookbook?.media,
+          DEFAULT_CONFIG.home.lookbook.media,
+        ),
+        eyebrowStyle: normalizeStyle(
+          lookbook?.eyebrowStyle,
+          DEFAULT_CONFIG.home.lookbook.eyebrowStyle,
+        ),
+        titleStyle: normalizeStyle(
+          lookbook?.titleStyle,
+          DEFAULT_CONFIG.home.lookbook.titleStyle,
+        ),
+        bodyStyle: normalizeStyle(
+          lookbook?.bodyStyle,
+          DEFAULT_CONFIG.home.lookbook.bodyStyle,
+        ),
       },
       beauty: {
         eyebrow: str(beauty?.eyebrow, DEFAULT_CONFIG.home.beauty.eyebrow),
         title: str(beauty?.title, DEFAULT_CONFIG.home.beauty.title),
         intro: str(beauty?.intro, DEFAULT_CONFIG.home.beauty.intro),
         media: normalizeMedia(beauty?.media, DEFAULT_CONFIG.home.beauty.media),
-        eyebrowStyle: normalizeStyle(beauty?.eyebrowStyle, DEFAULT_CONFIG.home.beauty.eyebrowStyle),
-        titleStyle: normalizeStyle(beauty?.titleStyle, DEFAULT_CONFIG.home.beauty.titleStyle),
-        introStyle: normalizeStyle(beauty?.introStyle, DEFAULT_CONFIG.home.beauty.introStyle),
+        eyebrowStyle: normalizeStyle(
+          beauty?.eyebrowStyle,
+          DEFAULT_CONFIG.home.beauty.eyebrowStyle,
+        ),
+        titleStyle: normalizeStyle(
+          beauty?.titleStyle,
+          DEFAULT_CONFIG.home.beauty.titleStyle,
+        ),
+        introStyle: normalizeStyle(
+          beauty?.introStyle,
+          DEFAULT_CONFIG.home.beauty.introStyle,
+        ),
       },
       ugc: {
         eyebrow: str(ugc?.eyebrow, DEFAULT_CONFIG.home.ugc.eyebrow),
         title: str(ugc?.title, DEFAULT_CONFIG.home.ugc.title),
         body: str(ugc?.body, DEFAULT_CONFIG.home.ugc.body),
         buttonText: str(ugc?.buttonText, DEFAULT_CONFIG.home.ugc.buttonText),
-        mediaProduct: normalizeMedia(ugc?.mediaProduct, DEFAULT_CONFIG.home.ugc.mediaProduct),
-        mediaCreator: normalizeMedia(ugc?.mediaCreator, DEFAULT_CONFIG.home.ugc.mediaCreator),
-        eyebrowStyle: normalizeStyle(ugc?.eyebrowStyle, DEFAULT_CONFIG.home.ugc.eyebrowStyle),
-        titleStyle: normalizeStyle(ugc?.titleStyle, DEFAULT_CONFIG.home.ugc.titleStyle),
-        bodyStyle: normalizeStyle(ugc?.bodyStyle, DEFAULT_CONFIG.home.ugc.bodyStyle),
+        mediaProduct: normalizeMedia(
+          ugc?.mediaProduct,
+          DEFAULT_CONFIG.home.ugc.mediaProduct,
+        ),
+        mediaCreator: normalizeMedia(
+          ugc?.mediaCreator,
+          DEFAULT_CONFIG.home.ugc.mediaCreator,
+        ),
+        eyebrowStyle: normalizeStyle(
+          ugc?.eyebrowStyle,
+          DEFAULT_CONFIG.home.ugc.eyebrowStyle,
+        ),
+        titleStyle: normalizeStyle(
+          ugc?.titleStyle,
+          DEFAULT_CONFIG.home.ugc.titleStyle,
+        ),
+        bodyStyle: normalizeStyle(
+          ugc?.bodyStyle,
+          DEFAULT_CONFIG.home.ugc.bodyStyle,
+        ),
       },
       newsletter: {
-        eyebrow: str(newsletter?.eyebrow, DEFAULT_CONFIG.home.newsletter.eyebrow),
+        eyebrow: str(
+          newsletter?.eyebrow,
+          DEFAULT_CONFIG.home.newsletter.eyebrow,
+        ),
         title: str(newsletter?.title, DEFAULT_CONFIG.home.newsletter.title),
-        eyebrowStyle: normalizeStyle(newsletter?.eyebrowStyle, DEFAULT_CONFIG.home.newsletter.eyebrowStyle),
-        titleStyle: normalizeStyle(newsletter?.titleStyle, DEFAULT_CONFIG.home.newsletter.titleStyle),
+        eyebrowStyle: normalizeStyle(
+          newsletter?.eyebrowStyle,
+          DEFAULT_CONFIG.home.newsletter.eyebrowStyle,
+        ),
+        titleStyle: normalizeStyle(
+          newsletter?.titleStyle,
+          DEFAULT_CONFIG.home.newsletter.titleStyle,
+        ),
       },
     },
     footer: {
-      description: str(input?.footer?.description, DEFAULT_CONFIG.footer.description),
+      description: str(
+        input?.footer?.description,
+        DEFAULT_CONFIG.footer.description,
+      ),
     },
     pages: {
       ugc: {
         title: str(input?.pages?.ugc?.title, DEFAULT_CONFIG.pages.ugc.title),
         intro: str(input?.pages?.ugc?.intro, DEFAULT_CONFIG.pages.ugc.intro),
-        portrait: normalizeMedia(input?.pages?.ugc?.portrait, DEFAULT_CONFIG.pages.ugc.portrait),
+        portrait: normalizeMedia(
+          input?.pages?.ugc?.portrait,
+          DEFAULT_CONFIG.pages.ugc.portrait,
+        ),
       },
       about: {
-        title: str(input?.pages?.about?.title, DEFAULT_CONFIG.pages.about.title),
-        firstParagraph: str(input?.pages?.about?.firstParagraph, DEFAULT_CONFIG.pages.about.firstParagraph),
-        secondParagraph: str(input?.pages?.about?.secondParagraph, DEFAULT_CONFIG.pages.about.secondParagraph),
-        quote: str(input?.pages?.about?.quote, DEFAULT_CONFIG.pages.about.quote),
-        portrait: normalizeMedia(input?.pages?.about?.portrait, DEFAULT_CONFIG.pages.about.portrait),
+        title: str(
+          input?.pages?.about?.title,
+          DEFAULT_CONFIG.pages.about.title,
+        ),
+        firstParagraph: str(
+          input?.pages?.about?.firstParagraph,
+          DEFAULT_CONFIG.pages.about.firstParagraph,
+        ),
+        secondParagraph: str(
+          input?.pages?.about?.secondParagraph,
+          DEFAULT_CONFIG.pages.about.secondParagraph,
+        ),
+        quote: str(
+          input?.pages?.about?.quote,
+          DEFAULT_CONFIG.pages.about.quote,
+        ),
+        portrait: normalizeMedia(
+          input?.pages?.about?.portrait,
+          DEFAULT_CONFIG.pages.about.portrait,
+        ),
       },
     },
   };
@@ -298,18 +420,28 @@ export function normalizeConfig(input?: Partial<SiteConfig> | null): SiteConfig 
 
 export async function readSiteConfig(): Promise<SiteConfig> {
   noStore();
-  try {
-    const raw = await fs.readFile(CONFIG_PATH, "utf8");
-    return normalizeConfig(JSON.parse(raw));
-  } catch {
-    return DEFAULT_CONFIG;
-  }
+  const raw = await readJsonFile(CONFIG_PATH, DEFAULT_CONFIG, (raw) =>
+    assertMatchingShape(raw, DEFAULT_CONFIG),
+  );
+  return mergeObjects(raw, normalizeConfig(raw));
 }
 
-export async function writeSiteConfig(input: Partial<SiteConfig>): Promise<SiteConfig> {
-  const config = normalizeConfig(input);
-  await fs.mkdir(DATA_DIR, { recursive: true });
-  await fs.writeFile(CONFIG_PATH, JSON.stringify(config, null, 2), "utf8");
+export async function writeSiteConfig(
+  input: Partial<SiteConfig>,
+  expectedRevision?: string | null,
+): Promise<SiteConfig> {
+  if (!input || typeof input !== "object" || Array.isArray(input))
+    throw new Error("Configuração inválida.");
+  assertMatchingShape(input, DEFAULT_CONFIG);
+  assertSafeMedia(input);
+  const current = await readSiteConfig();
+  const merged = mergeObjects(current, input);
+  const config = mergeObjects(merged, normalizeConfig(merged));
+  await writeJsonFile(CONFIG_PATH, config, {
+    expectedRevision,
+    fallback: DEFAULT_CONFIG,
+    normalize: (raw) => mergeObjects(raw, normalizeConfig(raw)),
+  });
   return config;
 }
 
@@ -319,9 +451,18 @@ export function getDataDir() {
 
 export function validateAdminPassword(password: string | null | undefined) {
   const configured = process.env.ADMIN_PASSWORD;
-  if (configured) return Boolean(password && password === configured);
+  if (configured)
+    return Boolean(
+      password &&
+        timingSafeEqual(
+          createHash("sha256").update(password).digest(),
+          createHash("sha256").update(configured).digest(),
+        ),
+    );
 
   if (!password) return false;
-  return createHash("sha256").update(password).digest("hex") ===
-    "3a560af98d3b3f1cded74f62e8735a28cc0088f6fccab0455fda30f0e4de4c5f";
+  return (
+    createHash("sha256").update(password).digest("hex") ===
+    "3a560af98d3b3f1cded74f62e8735a28cc0088f6fccab0455fda30f0e4de4c5f"
+  );
 }

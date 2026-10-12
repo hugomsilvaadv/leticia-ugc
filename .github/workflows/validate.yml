@@ -1,7 +1,7 @@
 name: Validate site
 on:
   push:
-    branches: [main, "fix/**"]
+    branches: [main, "fix/**", "feat/**"]
   pull_request:
     branches: [main]
 jobs:
@@ -14,8 +14,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: ""
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
-      - name: Type check and production build
-        run: npm run build
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Unit and storage tests
+        run: npm test
+      - name: Production build and type check
+        run: npm run build && npm run typecheck
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
+      - name: Functional, responsive and accessibility tests
+        run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-evidence
+          path: test-results/

@@ -1,0 +1,18 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {execFileSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
+import vm from 'node:vm';
+import ts from 'typescript';
+import assert from 'node:assert/strict';
+import {DEFAULT_CONFIG} from '../lib/site-config';
+import {articles} from '../lib/content';
+const baseline='567f84f2128ea983cfd27c65fb855c1ea857d10f';
+const source=(file:string)=>execFileSync('git',['show',`${baseline}:${file}`],{maxBuffer:16*1024*1024});
+const configSource=source('lib/site-config.ts').toString();const defaults=configSource.slice(configSource.indexOf('const text ='),configSource.indexOf('const DATA_DIR'));
+const code=ts.transpile(defaults.replaceAll('export const','const')+'\nJSON.stringify(DEFAULT_CONFIG)',{target:ts.ScriptTarget.ES2020});assert.deepEqual(DEFAULT_CONFIG,JSON.parse(vm.runInNewContext(code)));
+const scope={exports:{} as {articles?:unknown}};vm.runInNewContext(ts.transpile(source('lib/content.ts').toString(),{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}),scope);assert.deepEqual(articles,JSON.parse(JSON.stringify(scope.exports.articles)));
+const oldBody=source('lib/article-store.ts').toString().match(/const defaultBody = `([\s\S]*?)`;/)?.[1];const newBody=fs.readFileSync('lib/article-store.ts','utf8').match(/const defaultBody = `([\s\S]*?)`;/)?.[1];assert.equal(newBody,oldBody);
+const image='public/images/leticia-hero.jpg';assert.deepEqual(fs.readFileSync(image),source(image));
+const originalLinktree=path.resolve('/workspace/portfolio-leticia-linkbio/public/hero-fundo-leticia.jpg');if(fs.existsSync(originalLinktree))assert.deepEqual(fs.readFileSync('public/hero-fundo-leticia.jpg'),fs.readFileSync(originalLinktree));
+console.log(JSON.stringify({baseline,configDefaults:'unchanged',articleTexts:'unchanged',defaultBody:'unchanged',photographSha256:createHash('sha256').update(fs.readFileSync(image)).digest('hex'),linktreeOriginalMedia:'preserved byte for byte when source checkout is available'}));

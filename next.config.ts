@@ -1,27 +1,28 @@
 import type { NextConfig } from "next";
-
 const nextConfig: NextConfig = {
+  distDir: process.env.BUILD_OUTPUT_DIR || ".next",
   async headers() {
     return [
       {
         source: "/:path*",
         headers: [
-          {
-            key: "Cache-Control",
-            value: "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
-          },
-          {
-            key: "Pragma",
-            value: "no-cache"
-          },
-          {
-            key: "Expires",
-            value: "0"
-          }
-        ]
-      }
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        ],
+      },
+      {
+        source: "/api/:path*",
+        headers: [{ key: "Cache-Control", value: "no-store" }],
+      },
+      {
+        source: "/admin",
+        headers: [
+          { key: "Cache-Control", value: "no-store" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+        ],
+      },
     ];
-  }
+  },
 };
-
 export default nextConfig;

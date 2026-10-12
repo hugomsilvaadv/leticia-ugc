@@ -53,4 +53,12 @@ A direção visual completa está em `docs/DESIGN-SYSTEM.md`.
 - `docs/ANTIGRAVITY-BRIEF.md`: prompt inicial para o Google Antigravity
 
 ## Status
-Fase 1: definição editorial, design system e arquitetura de conteúdo.
+Aplicação Next.js implementada; a publicação da integração do Linktree depende da importação e conferência dos dados reais.
+
+## Desenvolvimento implementado
+
+A aplicação atual usa Next.js App Router, TypeScript e CSS editorial. O painel `/admin` gerencia páginas, matérias, biblioteca de mídia, portfólio e o Linktree nativo em `/linktree`. A persistência é JSON no volume `CONTENT_DATA_DIR` (padrão `/data`), com backups e gravação atômica.
+
+Instalação reproduzível: `npm ci`. Validação: `npm test`, `npm run test:e2e`, `npm run build` e `npm run typecheck`. A suíte E2E usa dados temporários isolados; não aponte testes para o volume real.
+
+A importação dos dados publicados do Linktree é um pré-requisito da sua ativação em produção. Consulte [publicação e preservação](docs/DEPLOYMENT.md) e [relatório da auditoria](docs/AUDIT-AND-DELIVERY.md). Nenhum deploy é executado pelos comandos de validação.
