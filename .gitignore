@@ -1,0 +1,9 @@
+node_modules/
+.next/
+.next-qa/
+playwright-report/
+test-results/
+*.tsbuildinfo
+.env*
+!.env.example
+.superpowers/

@@ -1,3 +1,4 @@
+import { jsonContent, apiError } from "@/lib/api-response";
 import { NextRequest, NextResponse } from "next/server";
 import { readArticles, writeArticles } from "@/lib/article-store";
 import { validateAdminPassword } from "@/lib/site-config";
@@ -5,8 +6,16 @@ import { validateAdminPassword } from "@/lib/site-config";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  return NextResponse.json(await readArticles(), { headers: { "Cache-Control": "no-store" } });
+export async function GET(request: Request) {
+  try {
+    return jsonContent(
+      await readArticles(
+        validateAdminPassword(request.headers.get("x-admin-password")),
+      ),
+    );
+  } catch (error) {
+    return apiError(error);
+  }
 }
 
 export async function PUT(request: NextRequest) {
@@ -16,9 +25,9 @@ export async function PUT(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const articles = await writeArticles(body);
-    return NextResponse.json(articles, { headers: { "Cache-Control": "no-store" } });
-  } catch {
-    return NextResponse.json({ error: "Não foi possível salvar os artigos." }, { status: 500 });
+    const articles = await writeArticles(body, request.headers.get("if-match"));
+    return jsonContent(articles);
+  } catch (error) {
+    return apiError(error);
   }
 }

@@ -1,5 +1,7 @@
+import { assertMatchingShape } from "@/lib/validation";
 import { unstable_noStore as noStore } from "next/cache";
-import fs from "node:fs/promises";
+import { readJsonFileSync, writeJsonFile } from "@/lib/json-store";
+import { assertSafeMedia } from "@/lib/media";
 import path from "node:path";
 import { getDataDir, type MediaAsset } from "@/lib/site-config";
 
@@ -14,33 +16,48 @@ export type PortfolioItem = {
 
 const FILE_PATH = path.join(getDataDir(), "portfolio.json");
 const emptyMedia = (): MediaAsset => ({
-  url: "", fit: "cover", positionX: 50, positionY: 50, zoom: 100, opacity: 100,
+  url: "",
+  fit: "cover",
+  positionX: 50,
+  positionY: 50,
+  zoom: 100,
+  opacity: 100,
 });
 
 const number = (value: unknown, fallback: number, min: number, max: number) => {
   const parsed = Number(value);
-  return Number.isFinite(parsed) ? Math.min(max, Math.max(min, parsed)) : fallback;
+  return Number.isFinite(parsed)
+    ? Math.min(max, Math.max(min, parsed))
+    : fallback;
 };
 
 export function normalizePortfolio(value: unknown): PortfolioItem[] {
   if (!Array.isArray(value)) return [];
   const used = new Set<string>();
-  return value.slice(0, 60).map((raw, index) => {
-    const item = raw && typeof raw === "object" ? raw as Partial<PortfolioItem> : {};
-    const media = item.media && typeof item.media === "object" ? item.media : emptyMedia();
-    let id = typeof item.id === "string" && /^[a-zA-Z0-9_-]{1,80}$/.test(item.id) ? item.id : `item-${index + 1}`;
+  return value.map((raw, index) => {
+    const item =
+      raw && typeof raw === "object" ? (raw as Partial<PortfolioItem>) : {};
+    const media =
+      item.media && typeof item.media === "object" ? item.media : emptyMedia();
+    let id =
+      typeof item.id === "string" && /^[a-zA-Z0-9_-]{1,80}$/.test(item.id)
+        ? item.id
+        : `item-${index + 1}`;
     if (used.has(id)) id = `${id}-${index}`;
     used.add(id);
-    const url = typeof media.url === "string" ? media.url.trim().slice(0, 2048) : "";
-    const safeUrl = (/^https:\/\//i.test(url) || /^\/(?!\/)/.test(url)) ? url : "";
+    const url = typeof media.url === "string" ? media.url : "";
+    const safeUrl =
+      /^https:\/\//i.test(url) || /^\/(?!\/)/.test(url) ? url : "";
     return {
+      ...item,
       id,
-      title: typeof item.title === "string" ? item.title.slice(0, 160) : "",
-      description: typeof item.description === "string" ? item.description.slice(0, 400) : "",
+      title: typeof item.title === "string" ? item.title : "",
+      description: typeof item.description === "string" ? item.description : "",
       type: item.type === "Foto" ? "Foto" : "Vídeo",
       published: item.published === true,
       media: {
-        url: safeUrl,
+        ...media,
+        url: typeof media.url === "string" ? media.url : safeUrl,
         fit: media.fit === "contain" ? "contain" : "cover",
         positionX: number(media.positionX, 50, 0, 100),
         positionY: number(media.positionY, 50, 0, 100),
@@ -51,18 +68,59 @@ export function normalizePortfolio(value: unknown): PortfolioItem[] {
   });
 }
 
-export async function readPortfolio(): Promise<PortfolioItem[]> {
-  noStore();
-  try {
-    return normalizePortfolio(JSON.parse(await fs.readFile(FILE_PATH, "utf8")));
-  } catch {
-    return [];
-  }
+export function validatePortfolio(
+  value: unknown,
+): asserts value is PortfolioItem[] {
+  if (
+    !Array.isArray(value) ||
+    value.some(
+      (item) =>
+        !item ||
+        typeof item !== "object" ||
+        !item.id ||
+        !item.media ||
+        !["Foto", "Vídeo"].includes(item.type),
+    )
+  )
+    throw new Error("Lista de trabalhos inválida.");
+  if (new Set(value.map((item) => item.id)).size !== value.length)
+    throw new Error("Trabalhos com identificadores duplicados.");
+  value.forEach((item) =>
+    assertMatchingShape(item, {
+      id: "",
+      title: "",
+      description: "",
+      type: "Foto",
+      media: emptyMedia(),
+      published: false,
+    }),
+  );
+  assertSafeMedia(value);
 }
 
-export async function writePortfolio(value: unknown): Promise<PortfolioItem[]> {
+export async function readPortfolio(
+  includeUnpublished = false,
+): Promise<PortfolioItem[]> {
+  noStore();
+  const raw = readJsonFileSync<PortfolioItem[]>(
+    FILE_PATH,
+    [],
+    validatePortfolio,
+  );
+  const rows = normalizePortfolio(raw);
+  return includeUnpublished ? rows : rows.filter((item) => item.published);
+}
+
+export async function writePortfolio(
+  value: unknown,
+  expectedRevision?: string | null,
+): Promise<PortfolioItem[]> {
+  validatePortfolio(value);
   const items = normalizePortfolio(value);
-  await fs.mkdir(getDataDir(), { recursive: true });
-  await fs.writeFile(FILE_PATH, JSON.stringify(items, null, 2), "utf8");
+  await writeJsonFile(FILE_PATH, items, {
+    expectedRevision,
+    fallback: [],
+    normalize: normalizePortfolio,
+  });
   return items;
 }

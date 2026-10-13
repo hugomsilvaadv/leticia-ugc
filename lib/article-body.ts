@@ -1,5 +1,8 @@
 /** Interpreta títulos numerados do texto sem modificar a redação original. */
-export type TextBlock = { type: "paragraph" | "heading" | "quote"; text: string };
+export type TextBlock = {
+  type: "paragraph" | "heading" | "quote";
+  text: string;
+};
 export type NumberedBlock = {
   type: "numbered";
   key: string;
@@ -17,7 +20,13 @@ export function parseArticleBody(body: string): BodyBlock[] {
 
     const numbered = text.match(/^(\d{1,3})[.)]\s+([^\n]+)$/);
     if (numbered) {
-      blocks.push({ type: "numbered", key: numbered[1], number: numbered[1], title: numbered[2], content: [] });
+      blocks.push({
+        type: "numbered",
+        key: numbered[1],
+        number: numbered[1],
+        title: numbered[2],
+        content: [],
+      });
       continue;
     }
 

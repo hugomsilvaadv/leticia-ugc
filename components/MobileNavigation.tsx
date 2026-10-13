@@ -1,106 +1,133 @@
 "use client";
-
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
-
 const sections = [
-  { label: "Início", href: "/" },
-  { label: "Moda", href: "/moda" },
-  { label: "Beleza", href: "/beleza" },
-  { label: "Lifestyle", href: "/lifestyle" },
-  { label: "Achados", href: "/achados" },
-  { label: "UGC", href: "/ugc" },
-  { label: "Sobre", href: "/sobre" },
+  ["Início", "/"],
+  ["Moda", "/moda"],
+  ["Beleza", "/beleza"],
+  ["Lifestyle", "/lifestyle"],
+  ["Achados", "/achados"],
+  ["UGC", "/ugc"],
+  ["Sobre", "/sobre"],
+  ["Linktree", "/linktree"],
 ];
-
-export default function MobileNavigation({ wordmark, signature }: { wordmark: string; signature: string }) {
+export default function MobileNavigation({
+  wordmark,
+  signature,
+}: {
+  wordmark: string;
+  signature: string;
+}) {
   const [open, setOpen] = useState(false);
-  const menuId = useId();
-  const openButton = useRef<HTMLButtonElement>(null);
-  const closeButton = useRef<HTMLButtonElement>(null);
-  const panel = useRef<HTMLDivElement>(null);
-
-  const close = () => {
+  const id = useId();
+  const dialog = useRef<HTMLDialogElement>(null);
+  const toggle = useRef<HTMLButtonElement>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const overflow = useRef("");
+  function close() {
     setOpen(false);
-    openButton.current?.focus();
-  };
-
-  useEffect(() => {
-    if (!open) return;
-
-    const previousOverflow = document.body.style.overflow;
+    const delay = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? 0
+      : 400;
+    timer.current = setTimeout(() => {
+      dialog.current?.close();
+      document.body.style.overflow = overflow.current;
+      toggle.current?.focus();
+    }, delay);
+  }
+  function show() {
+    if (dialog.current?.open) {
+      close();
+      return;
+    }
+    overflow.current = document.body.style.overflow;
+    dialog.current?.showModal();
     document.body.style.overflow = "hidden";
-    closeButton.current?.focus();
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        setOpen(false);
-        openButton.current?.focus();
-      }
-
-      if (event.key !== "Tab") return;
-      const focusable = Array.from(
-        panel.current?.querySelectorAll<HTMLElement>("button:not([disabled]), a[href]") ?? [],
+    requestAnimationFrame(() => {
+      setOpen(true);
+      requestAnimationFrame(() =>
+        dialog.current?.querySelector<HTMLButtonElement>("button")?.focus(),
       );
-      if (!focusable.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open]);
-
+    });
+  }
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+      document.body.style.overflow = overflow.current;
+    },
+    [],
+  );
   return (
     <>
       <button
-        ref={openButton}
+        ref={toggle}
         className="mobileMenuToggle"
         type="button"
         aria-label="Abrir menu de navegação"
-        aria-controls={menuId}
+        aria-controls={id}
         aria-expanded={open}
-        onClick={() => setOpen(true)}
+        onClick={show}
       >
-        <span className="mobileMenuHamburger" aria-hidden="true"><i /><i /><i /></span>
+        <span className="mobileMenuHamburger" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+        </span>
       </button>
-      <div
-        id={menuId}
+      <dialog
+        id={id}
+        ref={dialog}
         className={"mobileMenu" + (open ? " isOpen" : "")}
-        aria-hidden={!open}
+        aria-label="Menu de navegação"
+        onKeyDown={(event) => {
+          if (event.key !== "Tab") return;
+          const nodes = Array.from(
+            dialog.current?.querySelectorAll<HTMLElement>(
+              "button:not([disabled]),a[href]",
+            ) ?? [],
+          );
+          const first = nodes[0],
+            last = nodes[nodes.length - 1];
+          if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first?.focus();
+          } else if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last?.focus();
+          }
+        }}
+        onCancel={(event) => {
+          event.preventDefault();
+          close();
+        }}
+        onClick={(event) => {
+          if (event.target === dialog.current) close();
+        }}
       >
-        <div className="mobileMenuPanel" role="dialog" aria-modal={open} aria-label="Menu de navegação" ref={panel}>
+        <div className="mobileMenuPanel">
           <div className="mobileMenuTop">
             <button
-              ref={closeButton}
-              className="mobileMenuClose"
               type="button"
+              className="mobileMenuClose"
               aria-label="Fechar menu"
               onClick={close}
             >
               <span aria-hidden="true">×</span>
             </button>
-            <Link className="mobileMenuBrand" href="/" onClick={close}>{wordmark}</Link>
+            <Link className="mobileMenuBrand" href="/" onClick={close}>
+              {wordmark}
+            </Link>
           </div>
           <nav className="mobileMenuLinks" aria-label="Seções do site">
-            {sections.map(({ label, href }) => (
-              <Link href={href} key={href} onClick={close}>{label}</Link>
+            {sections.map(([label, href]) => (
+              <Link href={href} key={href} onClick={close}>
+                {label}
+              </Link>
             ))}
           </nav>
           <p className="mobileMenuSignature">{signature}</p>
         </div>
-      </div>
+      </dialog>
     </>
   );
 }
