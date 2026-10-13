@@ -48,7 +48,7 @@ export type LinktreeConfig = {
   services: LinktreeService[];
   blocks: ("profile" | "links" | "portfolio" | "services" | "contact")[];
   provenance: {
-    kind: "git-reference" | "imported";
+    kind: "git-reference" | "imported" | "published-snapshot";
     source?: string;
     importedAt?: string;
   };
@@ -174,7 +174,7 @@ export function validateLinktree(
     throw new Error("Linktree inválido: formato incompleto.");
   if (
     !v.provenance ||
-    !["git-reference", "imported"].includes(v.provenance.kind)
+    !["git-reference", "imported", "published-snapshot"].includes(v.provenance.kind)
   )
     throw new Error("Origem do Linktree inválida.");
   if (
