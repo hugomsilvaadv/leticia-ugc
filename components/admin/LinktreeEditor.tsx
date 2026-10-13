@@ -81,11 +81,12 @@ export default function LinktreeEditor({
   }
   return (
     <div className="linktreeEditor">
-      {config.provenance.kind === "git-reference" && (
+      {(config.provenance.kind === "git-reference" || config.provenance.kind === "published-snapshot") && (
         <div className="adminNotice" role="status">
-          Conteúdo de referência do repositório original. As edições e mídias do
-          Vercel Blob precisam ser importadas e conferidas antes da publicação.
-          O projeto antigo permanece ativo.
+          Os textos, fontes, cores e links do portfólio foram preservados.
+          As fotos e os vídeos antigos são opcionais: envie novas mídias
+          abaixo e clique em Salvar alterações. O portfólio anterior
+          permanece independente.
         </div>
       )}
       <div className="adminCard">
