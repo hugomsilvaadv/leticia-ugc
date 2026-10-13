@@ -1,27 +1,33 @@
-# Inicialização do Linktree pelo export público verificado (solução transitória)
+# Linktree — preservar identidade e substituir mídias pelo /admin
 
-Esta alteração evita depender imediatamente do acesso a `/data` para **exibir** a rota `/linktree` em um eventual deploy futuro. Nenhuma migração ou deploy é realizado por esta branch.
+## Decisão do projeto
 
-## Fonte e garantias
+A Letícia deseja manter os textos e a identidade editorial do Linktree original, mas prefere atualizar suas fotos e vídeos manualmente no painel do site unificado. A migração de mídias antigas do Vercel Blob deixou de ser requisito.
 
-- Arquivo versionado: `content/linktree-live-snapshot-2026-10-12.json`
-- Fonte: `GET https://portfolio-leticia-linkbio.vercel.app/api/config`, capturado e verificado em 12/10/2026.
-- 37 campos de texto, 4 referências de mídia e uma referência de fundo. O modelo existente completa a estrutura de links e serviços em código, preservando os destinos do site Astro original.
-- O marcador `provenance.kind=published-snapshot` é distinto de `imported`, pois **as mídias não foram copiadas**.
-- O arquivo `/data/linktree.json`, se existir, **prevalece sempre** sobre o snapshot Git. Erros de JSON existente continuam bloqueando leitura em vez de sobrescrever dados.
-- O painel de administração existente pode editar os dados depois de autenticação. A primeira gravação no volume cria `linktree.json`, mas não copia imagens/vídeos remotos automaticamente.
+**Nenhum deploy nem migração de dados do volume Railway é realizado por esta branch.**
 
-## Dependências e limitações
+## Conteúdo preservado
 
-- As URLs de fotos/vídeos continuam no Vercel Blob público. O Vercel antigo e os arquivos precisam permanecer ativos; se forem retirados, haverá mídia quebrada. Não considerar migração finalizada até copiar os binários, verificar SHA-256 e testar no Railway.
-- Não há backup binário comprovado de `/data`. Antes de aprovar um merge para `main`, revisar o conteúdo persistido e tirar cópia externa do volume. A branch é somente preparação técnica.
-- Validar em staging a apresentação real em desktop/mobile e os URLs Blob. A disponibilidade dos binários **não pôde ser confirmada daqui**.
-- Esta alteração não modifica `/data` nem as demais coleções (`site-config.json`, `articles.json`, `portfolio.json`), nem o domínio ou projeto Vercel.
-- Se desejar impedir o fallback temporário futuramente, voltar ao `DEFAULT_LINKTREE` original e exigir novamente apenas `provenance=imported` para produção.
+- Fonte auditável imutável: `content/linktree-live-snapshot-2026-10-12.json` (cópia do GET público original; 37 textos, quatro referências de mídia e um fundo).
+- Fonte utilizada na primeira inicialização: `content/linktree-upload-ready-2026-10-12.json`, copiada daquela fonte com somente as cinco URLs de mídia zeradas e `provenance.source` explicativo.
+- Os 37 textos e estilos (fontes, tamanhos, cores, pesos, alinhamento e posições) são preservados exatamente; as propriedades de enquadramento e opacidade das mídias também são preservadas.
+- Links comerciais, rede social, estrutura, ordem de blocos e pacotes são derivados do portfólio Astro original sem inventar informações.
+- Os espaços de imagem no público apresentam fundos neutros do design, e nenhuma imagem antiga ou gerada é imposta.
 
-## Comportamento resumido
+## Persistência e uploads no painel
 
-1. Se `/data/linktree.json` existe e é válido, carregar seu conteúdo.
-2. Se não existe, carregar o export público versionado, sem criar nenhum arquivo.
-3. A página pública aceita `published-snapshot` ou `imported`.
-4. Continuar com o fluxo seguro de migração de mídia e backup do volume antes do lançamento oficial.
+- Se já houver `/data/linktree.json`, **ele tem precedência**, sem qualquer substituição.
+- Sem arquivo persistido, `readLinktree` usa o JSON upload-ready do Git. Não cria/edita nenhum arquivo em `/data` apenas por exibir.
+- `/admin` > Linktree > Perfil, Fotografias e vídeos, e Apresentação e ordem dos blocos permitem enviar arquivos novos usando `POST /api/upload`, com a senha administrativa já configurada.
+- Cada upload salva o binário em `/data/uploads` e devolve uma URL `/api/media/<arquivo>`. Depois de enviar, clicar **Salvar alterações** para persistir a referência no `/data/linktree.json`. Editar o Linktree não altera `site-config.json`, `articles.json` ou `portfolio.json`.
+- Fotos permitidas: JPEG/PNG/WebP/GIF. Vídeos: MP4/WebM. Limite por arquivo: 30 MiB; vídeos maiores podem ser referenciados por YouTube/Vimeo quando suportados.
+- Links para o portfólio da Vercel e seus arquivos antigos não são necessários para exibição do conteúdo inicial.
+
+## Checklist antes de publicação
+
+1. Validar CI, visual desktop/mobile, menu e campos de edição da nova versão.
+2. Conferir que Railway mantém montagem persistente `/data`; ela foi verificada anteriormente pelo conector.
+3. Mesmo sem migração de fotos antigas, **fazer backup do volume atual antes da atualização**, pois o PR original altera código de armazenamento/admin de outras páginas.
+4. Publicar a versão do código apenas com autorização; não editar variáveis, DNS ou Vercel.
+5. Entrar em `https://www.byleticia.com.br/admin`, selecionar Linktree, enviar mídias e salvar, recarregar e conferir que persistem.
+6. Verificar /linktree no domínio público, incluindo imagens e vídeos novos após upload. Se houver anomalia, aplicar rollback do código e preservar /data.
