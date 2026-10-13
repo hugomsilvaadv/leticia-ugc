@@ -17,7 +17,7 @@ export default async function LinktreePage() {
   const config = await readLinktree();
   if (
     process.env.NODE_ENV === "production" &&
-    config.provenance.kind !== "imported"
+    !["imported", "published-snapshot"].includes(config.provenance.kind)
   )
     notFound();
   const urls = [
