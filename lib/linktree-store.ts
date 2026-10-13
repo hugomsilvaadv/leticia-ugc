@@ -1,6 +1,6 @@
 import path from "node:path";
 import { unstable_noStore as noStore } from "next/cache";
-import original from "@/content/linktree-original.json";
+import liveSnapshot from "@/content/linktree-live-snapshot-2026-10-12.json";
 import { getDataDir } from "./site-config";
 import {
   publicLinktree,
@@ -9,7 +9,10 @@ import {
   type LinktreeConfig,
 } from "./linktree-model";
 import { readJsonFileSync, writeJsonFile } from "./json-store";
-export const DEFAULT_LINKTREE = fromLegacyLinktree(original);
+// Bootstrap from a verified public snapshot when /data/linktree.json is absent.
+// Media remain on the original Vercel Blob until separately copied and verified.
+// A real persisted /data/linktree.json always takes precedence over this fallback.
+export const DEFAULT_LINKTREE = fromLegacyLinktree(liveSnapshot);
 const file = path.join(getDataDir(), "linktree.json");
 export async function readLinktree(includeEditorData = false) {
   noStore();
