@@ -42,15 +42,19 @@ export default function LinktreeView({
           if (block === "profile")
             return (
               <header key={block} className="linktreeProfile">
-                {mediaExists(config.media.profile?.url) && (
-                  <div className="linktreeAvatar">
+                <div className="linktreeAvatar">
+                  {mediaExists(config.media.profile?.url) ? (
                     <SharedMedia
                       asset={config.media.profile}
                       alt={text("heroTitle")}
                       priority
                     />
-                  </div>
-                )}
+                  ) : (
+                    <span className="linktreeAvatarPlaceholder" aria-hidden="true">
+                      L
+                    </span>
+                  )}
+                </div>
                 <p
                   className="eyebrow"
                   style={textStyle(config.texts.heroKicker)}
@@ -106,15 +110,19 @@ export default function LinktreeView({
                 </p>
                 <div className="linktreeGallery">
                   {config.videos
-                    .filter((v) => v.enabled && mediaExists(v.media.url))
+                    .filter((v) => v.enabled)
                     .map((v) => (
                       <article key={v.id}>
                         <div className="portfolioMedia">
-                          <SharedMedia
-                            asset={v.media}
-                            alt={v.title}
-                            video={v.type === "Vídeo"}
-                          />
+                          {mediaExists(v.media.url) ? (
+                            <SharedMedia
+                              asset={v.media}
+                              alt={v.title}
+                              video={v.type === "Vídeo"}
+                            />
+                          ) : (
+                            <div className="linktreeMediaSlot" aria-hidden="true" />
+                          )}
                         </div>
                         <span className="eyebrow">
                           {v.typeKey ? text(v.typeKey) : v.type}
