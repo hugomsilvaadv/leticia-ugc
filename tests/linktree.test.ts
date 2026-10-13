@@ -84,3 +84,26 @@ test("verified public snapshot is a validated non-destructive Linktree fallback"
   // Referencing original public Blob URLs does NOT count as copying their bytes.
   assert.ok(config.media.profile.url.startsWith("https://"));
 });
+
+test("upload-ready Linktree keeps all published text and styling but no old Blob media", async () => {
+  const { default: originalSnapshot } = await import("../content/linktree-live-snapshot-2026-10-12.json");
+  const { default: uploadReady } = await import("../content/linktree-upload-ready-2026-10-12.json");
+  const config = fromLegacyLinktree(uploadReady);
+  assert.doesNotThrow(() => validateLinktree(config));
+  assert.equal(config.provenance.kind, "published-snapshot");
+  assert.deepEqual(config.texts, originalSnapshot.texts);
+  assert.equal(Object.keys(config.texts).length, 37);
+  assert.deepEqual(
+    Object.fromEntries(Object.entries(config.media).map(([key, value]) => [key, value.url])),
+    { profile: "", product: "", unboxing: "", fitting: "" },
+  );
+  assert.equal(config.background.url, "");
+  assert.equal(config.background.opacity, originalSnapshot.background.opacity);
+  assert.deepEqual(
+    Object.fromEntries(Object.entries(config.media).map(([key, value]) => [key, { ...value, url: undefined, opacity: undefined }])),
+    Object.fromEntries(Object.entries(originalSnapshot.media).map(([key, value]) => [key, { ...value, url: undefined, opacity: undefined }])),
+  );
+  assert.ok(config.videos.every(video => video.media.url === ""));
+  assert.ok(config.links.every(link => link.href.length > 0));
+  assert.ok(config.services.every(service => service.href.length > 0));
+});
