@@ -67,3 +67,20 @@ test('public Linktree projection excludes inactive records and unused editor-onl
  const {publicLinktree}=await import('../lib/linktree-model');const data=fromLegacyLinktree(original);data.links.push({id:'draft',label:'Reserva privada',href:'https://example.com/private-deal',enabled:false});data.texts.privateNote={...data.texts.heroTitle,text:'Nota reservada ao editor'};data.videos.push({...data.videos[0],id:'private-video',title:'Vídeo reservado',enabled:false,media:{...data.videos[0].media,url:'https://example.com/private-video.mp4'}});
  const result=JSON.stringify(publicLinktree(data));assert.equal(result.includes('private-deal'),false);assert.equal(result.includes('private-video.mp4'),false);assert.equal(result.includes('Nota reservada'),false);assert.equal(result.includes(data.texts.heroTitle.text),true);
 });
+
+
+test("verified public snapshot is a validated non-destructive Linktree fallback", async () => {
+  const { default: snapshot } = await import("../content/linktree-live-snapshot-2026-10-12.json");
+  const config = fromLegacyLinktree(snapshot);
+  assert.doesNotThrow(() => validateLinktree(config));
+  assert.equal(config.provenance.kind, "published-snapshot");
+  assert.equal(Object.keys(config.texts).length, 37);
+  assert.equal(Object.keys(config.media).length, 4);
+  assert.equal(config.texts.heroTitle.text, "Letícia Leite");
+  assert.equal(config.background.url, snapshot.background.url);
+  for (const key of ["profile", "product", "unboxing", "fitting"]) {
+    assert.equal(config.media[key].url, snapshot.media[key as keyof typeof snapshot.media].url);
+  }
+  // Referencing original public Blob URLs does NOT count as copying their bytes.
+  assert.ok(config.media.profile.url.startsWith("https://"));
+});
