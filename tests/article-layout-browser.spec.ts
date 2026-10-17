@@ -18,7 +18,16 @@ test("authenticated visual layout editor reorders and resizes homepage article c
     const tiles = grid.locator("[data-layout-tile]");
     await expect(tiles).toHaveCount(3);
     const originalOrder = await tiles.evaluateAll((nodes) => nodes.map((node) => node.getAttribute("data-layout-tile")));
-    await tiles.nth(1).dragTo(tiles.nth(0));
+    const dragHandle = tiles.nth(1).locator(".layoutBuilderDragLabel");
+    await dragHandle.scrollIntoViewIfNeeded();
+    const start = await dragHandle.boundingBox();
+    const target = await tiles.nth(0).boundingBox();
+    expect(start).not.toBeNull();
+    expect(target).not.toBeNull();
+    await page.mouse.move(start!.x + start!.width / 2, start!.y + start!.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(target!.x + target!.width / 2, target!.y + target!.height / 2, { steps: 8 });
+    await page.mouse.up();
     await expect(grid.locator("[data-layout-tile]").first()).toHaveAttribute("data-layout-tile", originalOrder[1]!);
 
     const resize = grid.locator('.layoutBuilderTile[data-layout-tile="' + originalOrder[1] + '"] .layoutBuilderResize');
