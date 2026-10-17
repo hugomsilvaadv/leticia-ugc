@@ -468,3 +468,73 @@ body:has(main.homeEditorial) > header .masthead .wordmark::before {
     mask-image: linear-gradient(to bottom, #000 0%, #000 82%, transparent 100%);
   }
 }
+
+
+/* Separation of concerns: independent editorial campaign media carries the
+ * brand high in the frame; the linked article is anchored at the bottom left.
+ * Reserve real layout space so CMS-managed headlines of varying lengths/font
+ * sizes cannot collide with the overlaid wordmark. No text is truncated. */
+body:has(main.homeEditorial) > header .masthead .wordmark {
+  top: clamp(120px, 18svh, 205px);
+}
+.homeEditorial .leadMain {
+  min-height: max(740px, 96svh);
+  padding-top: clamp(265px, 33svh, 370px);
+  grid-template-rows: minmax(0, 1fr);
+}
+.homeEditorial .leadCopy {
+  box-sizing: border-box;
+  align-self: end;
+  position: relative;
+  max-width: 820px;
+  padding: 0 var(--refero-gutter) clamp(32px, 5svh, 58px);
+  margin-top: auto;
+}
+.homeEditorial .leadCopy h1 {
+  max-width: 760px;
+  margin-top: 9px;
+  margin-bottom: 14px;
+  line-height: 1.08;
+}
+.homeEditorial .leadCopy p {
+  max-width: 670px;
+}
+.homeEditorial .leadCopy .textLink {
+  margin-top: 8px;
+}
+@media (max-width: 800px) {
+  body:has(main.homeEditorial) > header .masthead .wordmark {
+    top: clamp(125px, 21svh, 195px);
+  }
+  .homeEditorial .leadMain {
+    min-height: max(700px, 94svh);
+    padding-top: clamp(260px, 39svh, 355px);
+  }
+  .homeEditorial .leadCopy {
+    max-width: 100%;
+    padding: 0 22px 32px;
+  }
+  .homeEditorial .leadCopy h1 {
+    margin: 8px 0 13px;
+  }
+}
+@media (max-width: 560px) {
+  .homeEditorial .leadMain {
+    min-height: max(700px, 94svh);
+    padding-top: clamp(245px, 38svh, 335px);
+  }
+  .homeEditorial .leadCopy {
+    padding: 0 20px 28px;
+  }
+  .homeEditorial .leadCopy h1 {
+    max-width: 100%;
+  }
+}
+@media (max-width: 360px) {
+  body:has(main.homeEditorial) > header .masthead .wordmark {
+    top: 140px;
+  }
+  .homeEditorial .leadMain {
+    padding-top: 240px;
+  }
+}
