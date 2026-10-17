@@ -29,6 +29,10 @@ export type MediaAsset = {
   height?: number;
 };
 
+export type ArticleLayoutSection = "destaques" | "moda" | "arquivo";
+export type ArticleTileLayout = { slug: string; columns: number; height: number };
+export type ArticleLayout = Record<ArticleLayoutSection, ArticleTileLayout[]>;
+
 export type SiteConfig = {
   brand: {
     utility: string;
@@ -37,6 +41,7 @@ export type SiteConfig = {
     wordmarkStyle: TextStyle;
   };
   home: {
+    articleLayout: ArticleLayout;
     hero: {
       featuredSlug: string;
       eyebrow: string;
@@ -129,6 +134,7 @@ export const DEFAULT_CONFIG: SiteConfig = {
     wordmarkStyle: text("Georgia", 64, "center"),
   },
   home: {
+    articleLayout: { destaques: [], moda: [], arquivo: [] },
     hero: {
       featuredSlug: "",
       eyebrow: "Em destaque · Moda",
@@ -247,6 +253,29 @@ function normalizeMedia(
   };
 }
 
+export function normalizeArticleLayout(value: unknown): ArticleLayout {
+  const sections: ArticleLayoutSection[] = ["destaques", "moda", "arquivo"];
+  const raw = value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown> : {};
+  const result = { destaques: [], moda: [], arquivo: [] } as ArticleLayout;
+  for (const section of sections) {
+    const rows = Array.isArray(raw[section]) ? raw[section] : [];
+    const seen = new Set<string>();
+    for (const row of rows.slice(0, 60)) {
+      if (!row || typeof row !== "object" || Array.isArray(row)) continue;
+      const item = row as Record<string, unknown>;
+      if (typeof item.slug !== "string" || !/^[a-zA-Z0-9_-]{1,120}$/.test(item.slug) || seen.has(item.slug)) continue;
+      seen.add(item.slug);
+      result[section].push({
+        slug: item.slug,
+        columns: Math.round(num(item.columns, 1, 1, section === "destaques" ? 2 : 3)),
+        height: Math.round(num(item.height, 300, 180, 640) / 10) * 10,
+      });
+    }
+  }
+  return result;
+}
+
 const str = (value: unknown, fallback: string) =>
   typeof value === "string" ? value : fallback;
 
@@ -272,6 +301,7 @@ export function normalizeConfig(
       ),
     },
     home: {
+      articleLayout: normalizeArticleLayout(h?.articleLayout),
       hero: {
         featuredSlug: str(hero?.featuredSlug, ""),
         eyebrow: str(hero?.eyebrow, DEFAULT_CONFIG.home.hero.eyebrow),
