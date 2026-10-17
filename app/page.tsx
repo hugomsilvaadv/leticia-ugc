@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
-import { Card, Latest, Newsletter, Visual } from "@/components/Site";
+import { ArticleGridSlot, Latest, Newsletter, Visual } from "@/components/Site";
+import { arrangeArticleTiles } from "@/lib/article-layout";
 import { readArticles } from "@/lib/article-store";
 import { readSiteConfig, type TextStyle } from "@/lib/site-config";
 import { isVideoFile, safeMediaUrl } from "@/lib/media";
@@ -85,9 +86,17 @@ export default async function Home() {
               </Link>
             </div>
           </div>
-          <aside className="leadSide">
-            {second && <Card article={second} compact />}
-            {third && <Card article={third} compact />}
+          <aside className="leadSide editorialTiledGrid" data-layout-section="destaques">
+            {arrangeArticleTiles([second, third].filter((item): item is NonNullable<typeof item> => Boolean(item)), config.home.articleLayout.destaques).map(({ article, columns, height }) => (
+              <ArticleGridSlot
+                key={article.slug}
+                article={article}
+                columns={columns}
+                height={height}
+                compact
+                customized={config.home.articleLayout.destaques.some((tile) => tile.slug === article.slug)}
+              />
+            ))}
           </aside>
         </section>
       )}
@@ -110,13 +119,16 @@ export default async function Home() {
             Ver tudo
           </Link>
         </div>
-        <div className="articleGrid">
-          {allArticles
-            .filter((a) => a.category === "Moda")
-            .slice(0, 3)
-            .map((a) => (
-              <Card key={a.slug} article={a} />
-            ))}
+        <div className="articleGrid editorialTiledGrid" data-layout-section="moda" data-editor="home.articleLayout">
+          {arrangeArticleTiles(allArticles.filter((a) => a.category === "Moda").slice(0, 3), config.home.articleLayout.moda).map(({ article, columns, height }) => (
+            <ArticleGridSlot
+              key={article.slug}
+              article={article}
+              columns={columns}
+              height={height}
+              customized={config.home.articleLayout.moda.some((tile) => tile.slug === article.slug)}
+            />
+          ))}
         </div>
       </section>
 
@@ -254,7 +266,7 @@ export default async function Home() {
             <h2>Do arquivo</h2>
           </div>
         </div>
-        <Latest articles={allArticles} />
+        <Latest articles={allArticles} layout={config.home.articleLayout.arquivo} />
       </section>
       <Newsletter
         eyebrow={newsletter.eyebrow}
