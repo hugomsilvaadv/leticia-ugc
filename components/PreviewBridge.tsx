@@ -78,7 +78,37 @@ function applyMedia(key: string, asset: MediaAsset) {
     });
 }
 
+function applyArticleLayout(config: SiteConfig) {
+  for (const section of ["destaques", "moda", "arquivo"] as const) {
+    const holder = document.querySelector<HTMLElement>(
+      `[data-layout-section="${section}"]`,
+    );
+    if (!holder) continue;
+    const tiles = Array.from(holder.children).filter(
+      (node): node is HTMLElement =>
+        node instanceof HTMLElement && Boolean(node.dataset.layoutSlug),
+    );
+    const items = new Map(tiles.map((node) => [node.dataset.layoutSlug!, node]));
+    const layout = config.home.articleLayout?.[section] ?? [];
+    const configured = new Map(layout.map((row) => [row.slug, row]));
+    const ordered = [
+      ...layout.map((row) => items.get(row.slug)).filter(
+        (node): node is HTMLElement => Boolean(node),
+      ),
+      ...tiles.filter((node) => !configured.has(node.dataset.layoutSlug!)),
+    ];
+    ordered.forEach((node) => {
+      const row = configured.get(node.dataset.layoutSlug!);
+      node.dataset.customSize = row ? "1" : "0";
+      node.style.gridColumn = `span ${row?.columns ?? 1}`;
+      node.style.setProperty("--tile-height", `${row?.height ?? 300}px`);
+      holder.appendChild(node);
+    });
+  }
+}
+
 function applyConfig(config: SiteConfig) {
+  applyArticleLayout(config);
   applyText("brand.utility", config.brand.utility);
   applyText(
     "brand.wordmark",
