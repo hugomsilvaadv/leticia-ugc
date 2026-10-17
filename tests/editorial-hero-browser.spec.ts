@@ -25,6 +25,9 @@ test("editorial homepage keeps saved copy, article CTA and sections at all sizes
         .map(node => ({
           tag: node.tagName,
           className: typeof node.className === "string" ? node.className.slice(0, 110) : "",
+          parent: node.parentElement?.className,
+          text: node.textContent?.trim().slice(0, 80),
+          left: Math.round(node.getBoundingClientRect().left),
           right: Math.round(node.getBoundingClientRect().right),
         })),
     }));
