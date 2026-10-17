@@ -201,8 +201,12 @@ export default function AdminEditor() {
   useEffect(() => {
     void loadContent().then(({ epoch, errors }) => {
       if (epoch !== loadEpoch.current) return;
+      // Antes da autenticação, endpoints privados podem negar ou limitar
+      // dados propositalmente. Não mostrar isso como falha do Linktree/portfólio.
       setStatus(
-        errors.length ? errors.join("; ") : "Informe a senha para editar.",
+        errors.some((message) => message.startsWith("Páginas e aparência:"))
+          ? "Não foi possível carregar o painel. Atualize a página."
+          : "Informe a senha para editar.",
       );
     });
   }, []);
@@ -634,12 +638,17 @@ export default function AdminEditor() {
             ? null
             : "site-config";
   const fullContentReady =
-    !activeResource || baseline.current[activeResource]?.full;
+    tab === "dashboard"
+      ? ["site-config", "articles", "portfolio", "linktree"].every(
+          (key) => baseline.current[key]?.full,
+        )
+      : !activeResource || baseline.current[activeResource]?.full;
   const h = config.home;
   const previewWidth = previewMode === "desktop" ? 1440 : 390;
   const previewHeight = previewMode === "desktop" ? 900 : 844;
   const previewSrc =
-    tab === "artigos"
+    tab === "linktree" ? "/linktree?editorPreview=1"
+    : tab === "artigos"
       ? "/editor-preview/article?editorPreview=1"
       : tab === "portfolio" || tab === "pagina-ugc"
         ? "/ugc?editorPreview=1"
@@ -754,6 +763,7 @@ export default function AdminEditor() {
             <select
               id="admin-section-select"
               aria-label="Selecionar seção do site"
+              disabled={!authenticated || loadingFull}
               value={tab}
               onChange={(event) => setTab(event.target.value)}
             >
@@ -800,18 +810,33 @@ export default function AdminEditor() {
               }
             >
               {!authenticated && (
-                <p className="adminNotice">
-                  Valide sua senha para editar. Rascunhos e trabalhos não
-                  publicados são carregados somente após o acesso autorizado.
+                <div className="adminAccessGate" role="status">
+                  <strong>Entre para visualizar e editar esta seção</strong>
+                  <p>
+                    Digite a senha administrativa e clique em <b>Validar acesso</b>.
+                    Somente depois serão carregados os trabalhos, links, matérias
+                    e demais conteúdos reais do painel.
+                  </p>
+                  <p>
+                    Nenhum registro foi apagado. Os controles de edição e a
+                    seleção de seções serão liberados após a autenticação.
+                  </p>
+                </div>
+              )}
+              {authenticated && loadingFull && (
+                <p className="adminNotice" role="status">
+                  Carregando os conteúdos do painel. Aguarde a validação completa.
                 </p>
               )}
-              {authenticated && !fullContentReady && (
+              {authenticated && !loadingFull && !fullContentReady && (
                 <p className="adminNotice" role="alert">
-                  O conteúdo completo desta área não carregou. Ela permanece
-                  bloqueada para proteger os registros. Recarregue o painel
-                  antes de editar.
+                  Não foi possível confirmar o carregamento completo desta seção.
+                  Nenhum conteúdo será substituído. Confira a mensagem na barra
+                  inferior e recarregue o painel antes de editar.
                 </p>
               )}
+              {authenticated && !loadingFull && fullContentReady && (
+                <>
               {tab === "dashboard" && (
                 <div className="adminDashboard">
                   <div className="adminCard">
@@ -1617,6 +1642,8 @@ export default function AdminEditor() {
                   />
                 </div>
               )}
+                </>
+              )}
             </fieldset>
           </div>
 
@@ -1668,7 +1695,7 @@ export default function AdminEditor() {
             </div>
           </div>
 
-          {tab === "linktree" && linktree ? (
+          {tab === "linktree" && linktree && authenticated && fullContentReady ? (
             <div className="adminLinktreePreview">
               <LinktreeView
                 config={linktree}

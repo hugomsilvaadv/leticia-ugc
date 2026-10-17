@@ -199,3 +199,44 @@
   .adminWorkspace .adminSaveBar { flex-wrap: wrap; }
   .adminWorkspace .adminSaveBar button { margin-left: auto; }
 }
+
+/* A deliberate access state: no misleading "0 trabalhos" or error message
+ * while the owner has not authenticated to read private drafts. */
+.adminWorkspace .adminAccessGate {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 20px 17px;
+  border: 1px solid #dacfc5;
+  background: #faf6f1;
+  color: #45342a;
+  overflow-wrap: anywhere;
+}
+.adminWorkspace .adminAccessGate strong {
+  font: 500 19px/1.25 Georgia, "Times New Roman", serif;
+}
+.adminWorkspace .adminAccessGate p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.adminWorkspace .adminSectionPicker select:disabled {
+  cursor: not-allowed;
+  opacity: .65;
+  background: #f0e9e2;
+}
+@media (max-width: 760px) {
+  /* In-app browsers (Instagram) can retain a scrolled internal viewport.
+   * Keep the admin identity reachable beneath the browser toolbar. */
+  .adminWorkspace .adminTop {
+    position: sticky;
+    top: 0;
+    z-index: 8;
+    background: #fff;
+    padding-top: max(12px, env(safe-area-inset-top));
+    box-shadow: 0 2px 6px rgb(59 43 34 / 5%);
+  }
+  .adminWorkspace .adminTop h1 {
+    font-size: 21px;
+  }
+}
