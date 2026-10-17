@@ -9,6 +9,7 @@ const sections = [
   ["Achados", "/achados"],
   ["UGC", "/ugc"],
   ["Sobre", "/sobre"],
+  ["Buscar", "/busca"],
   ["Linktree", "/linktree"],
 ];
 export default function MobileNavigation({
