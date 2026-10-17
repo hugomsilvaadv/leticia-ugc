@@ -14,6 +14,8 @@ test("authenticated visual layout editor reorders and resizes homepage article c
     await expect(page.getByText("Senha validada. Você pode salvar alterações.", { exact: false })).toBeVisible();
     await page.getByRole("button", { name: "Layout das matérias", exact: true }).click();
 
+    const workspaceHeight = await page.locator(".adminControls").evaluate((el) => el.getBoundingClientRect().height);
+    expect(workspaceHeight).toBeGreaterThan(200);
     const grid = page.locator('[data-layout-builder="moda"]');
     const tiles = grid.locator("[data-layout-tile]");
     await expect(tiles).toHaveCount(3);
@@ -21,7 +23,7 @@ test("authenticated visual layout editor reorders and resizes homepage article c
     const dragHandle = tiles.nth(1).locator(".layoutBuilderDragLabel");
     await dragHandle.scrollIntoViewIfNeeded();
     const start = await dragHandle.boundingBox();
-    const target = await tiles.nth(0).boundingBox();
+    const target = await tiles.nth(0).locator(".layoutBuilderDragLabel").boundingBox();
     expect(start).not.toBeNull();
     expect(target).not.toBeNull();
     await page.mouse.move(start!.x + start!.width / 2, start!.y + start!.height / 2);
