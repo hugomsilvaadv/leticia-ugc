@@ -17,6 +17,10 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
+      - name: Install verified backup tool
+        run: |
+          bash scripts/install-restic.sh "$RUNNER_TEMP/restic"
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
       - name: Unit and storage tests
         run: npm test
       - name: Production build and type check

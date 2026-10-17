@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: "/api/:path*",
+        source: "/api/:path((?!media/[^/]+$).*)",
         headers: [{ key: "Cache-Control", value: "no-store" }],
       },
       {

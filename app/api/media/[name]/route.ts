@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import fs from "node:fs/promises";
 import { constants } from "node:fs";
 import path from "node:path";
+import { Readable } from "node:stream";
 import { getDataDir } from "@/lib/site-config";
+import { createImageDerivative, derivativeWidth } from "@/lib/image-derivatives";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,11 +31,17 @@ export async function GET(
   if (name.startsWith(".") || !mime[path.extname(name).toLowerCase()])
     return new NextResponse("Arquivo não encontrado", { status: 404 });
 
+  let width: number | null;
+  try { width = derivativeWidth(new URL(request.url).searchParams); }
+  catch { return new NextResponse("Largura inválida", { status: 400, headers: { "Cache-Control": "no-store" } }); }
+
   let handle: fs.FileHandle | undefined;
   try {
     const filePath = path.join(getDataDir(), "uploads", safeName);
     handle = await fs.open(filePath, constants.O_RDONLY | constants.O_NOFOLLOW);
-    const { size } = await handle.stat();
+    const stat = await handle.stat();
+    if (!stat.isFile()) return new NextResponse("Arquivo não encontrado", { status: 404 });
+    const { size } = stat;
     const contentType =
       mime[path.extname(safeName).toLowerCase()] || "application/octet-stream";
     const headers: Record<string, string> = {
@@ -41,6 +49,17 @@ export async function GET(
       "Cache-Control": "public, max-age=31536000, immutable",
       "Accept-Ranges": "bytes",
     };
+    if (width && ["image/jpeg", "image/png", "image/webp"].includes(contentType)) {
+      try {
+        const derivative = await createImageDerivative(handle, width);
+        if (derivative) return new NextResponse(derivative, {
+          headers: { "Content-Type": "image/webp", "Content-Length": String(derivative.length), "Cache-Control": headers["Cache-Control"] },
+        });
+      } catch {
+        // Busy, unsupported or oversized sources stream their intact original.
+        // Browsers do not retry failed srcSet requests; never break an image on saturation.
+      }
+    }
     const range = request.headers.get("range");
     let start = 0;
     let end = size - 1;
@@ -72,11 +91,13 @@ export async function GET(
       }
       end = Math.min(end, size - 1);
     }
-    const bytes = Buffer.alloc(Math.max(0, end - start + 1));
-    await handle.read(bytes, 0, bytes.length, start);
-    headers["Content-Length"] = String(bytes.length);
+    headers["Content-Length"] = String(Math.max(0, end - start + 1));
     if (range) headers["Content-Range"] = `bytes ${start}-${end}/${size}`;
-    return new NextResponse(bytes, { status: range ? 206 : 200, headers });
+    if (!size) return new NextResponse(null, { headers });
+    const stream = handle.createReadStream({ start, end, autoClose: true });
+    const response = new NextResponse(Readable.toWeb(stream) as ReadableStream<Uint8Array>, { status: range ? 206 : 200, headers });
+    handle = undefined; // The response stream now owns and closes the descriptor.
+    return response;
   } catch {
     return new NextResponse("Arquivo não encontrado", { status: 404 });
   } finally {

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { isPublishedLinktree } from "@/lib/linktree-model";
 import { readLinktree } from "@/lib/linktree-store";
 import LinktreeView from "@/components/LinktreeView";
 export const dynamic = "force-dynamic";
@@ -17,7 +18,7 @@ export default async function LinktreePage() {
   const config = await readLinktree();
   if (
     process.env.NODE_ENV === "production" &&
-    !["imported", "published-snapshot"].includes(config.provenance.kind)
+    !isPublishedLinktree(config.provenance.kind)
   )
     notFound();
   const urls = [

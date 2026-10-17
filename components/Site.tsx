@@ -1,3 +1,4 @@
+import NewsletterForm from "@/components/NewsletterForm";
 import SharedMedia from "@/components/Media";
 import Link from "next/link";
 import MobileNavigation from "@/components/MobileNavigation";
@@ -56,6 +57,8 @@ export async function Footer() {
           <Link href="/lifestyle">Lifestyle</Link>
           <Link href="/achados">Achados</Link>
           <Link href="/linktree">Linktree</Link>
+          <Link href="/busca">Buscar</Link>
+          <Link href="/privacidade">Privacidade</Link>
         </div>
         <div>
           <strong>Contato</strong>
@@ -185,14 +188,7 @@ export function Newsletter({
           {title}
         </h2>
       </div>
-      <form>
-        <input
-          aria-label="Seu e-mail"
-          type="email"
-          placeholder="seu@email.com"
-        />
-        <button type="button">Quero receber</button>
-      </form>
+      <NewsletterForm />
     </section>
   );
 }

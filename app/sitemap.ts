@@ -1,3 +1,4 @@
+import { isPublishedLinktree } from "@/lib/linktree-model";
 import { readLinktree } from "@/lib/linktree-store";
 import type { MetadataRoute } from "next";
 import { readArticles } from "@/lib/article-store";
@@ -7,7 +8,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const linktree = await readLinktree();
   const pages = ["", "moda", "beleza", "lifestyle", "achados", "ugc", "sobre"];
   if (
-    linktree.provenance.kind === "imported" ||
+    isPublishedLinktree(linktree.provenance.kind) ||
     process.env.NODE_ENV !== "production"
   )
     pages.push("linktree");

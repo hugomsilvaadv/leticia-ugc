@@ -2796,3 +2796,23 @@ body:has(.adminOverlay) > .footer {
 }
 .adminControls:disabled{opacity:1}
 .adminFields{padding:0;margin:0;border:0;min-width:0;display:grid;gap:16px}.adminFields:disabled{opacity:1}
+
+/* Editorial newsletter: readable consent, private management and feedback. */
+.newsletter form.newsletterSignup { display: block; border: 0; min-width: 0; }
+.newsletterEmailRow { display: flex; gap: 12px; border-bottom: 1px solid var(--espresso); }
+.newsletterEmailRow input { min-width: 0; }
+.newsletterSignup .newsletterConsent { display: flex; align-items: flex-start; gap: 10px; margin-top: 18px; font-size: 13px; line-height: 1.6; }
+.newsletterSignup .newsletterConsent input { flex: 0 0 auto; width: 18px; height: 18px; margin-top: 3px; accent-color: var(--espresso); }
+.newsletterSignup a, .privacyCopy a, .newsletterManagement a { text-decoration: underline; text-underline-offset: 3px; }
+.newsletterNote, .newsletterSignup [role="status"], .newsletterSignup [role="alert"] { font-size: 13px; line-height: 1.7; }
+.newsletterSignup button:disabled { opacity: .55; cursor: default; }
+.newsletterSignup input:focus-visible { outline: 2px solid var(--espresso); outline-offset: 3px; }
+.newsletterTrap { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.privacyCopy, .newsletterManagement { max-width: 760px; line-height: 1.8; }
+.privacyCopy h2 { margin-top: 36px; }
+.subscriberList { list-style: none; padding: 0; }
+.subscriberList li { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+.subscriberList strong { overflow-wrap: anywhere; }
+.subscriberList p { font-size: 13px; }
+.subscriberList li > div { min-width: 0; }
+@media (max-width: 600px) { .newsletterEmailRow { flex-direction: column; border: 0; } .subscriberList li { display: block; } .newsletterManagement .button { white-space: normal; } }

@@ -3,6 +3,14 @@ import type { CSSProperties } from "react";
 import type { MediaAsset } from "@/lib/site-config";
 import { getEmbedUrl, isVideoFile, safeMediaUrl } from "@/lib/media";
 
+export function uploadedImageSrcSet(url: string): string | undefined {
+  if (!/^\/api\/media\/[a-zA-Z0-9_-]+\.(?:jpe?g|png|webp)$/i.test(url))
+    return undefined;
+  return [320, 640, 960, 1440]
+    .map((width) => `${url}?width=${width} ${width}w`)
+    .join(", ");
+}
+
 export function mediaStyle(asset: MediaAsset): CSSProperties {
   return {
     "--media-x": `${asset.positionX}%`,
@@ -56,10 +64,13 @@ export default function SharedMedia({
         preload="metadata"
       />
     );
+  const srcSet = uploadedImageSrcSet(asset.url);
   return (
     <img
       className="sharedMedia"
       src={asset.url}
+      srcSet={srcSet}
+      sizes={srcSet ? "(max-width: 760px) 100vw, (max-width: 1200px) 75vw, 960px" : undefined}
       width={width}
       height={height}
       alt={alt}

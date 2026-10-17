@@ -1,3 +1,5 @@
+> Atualização em 17/10/2026: a PR #6/busca já está publicada em main 1fdc77d. O responsável confirmou backup externo real de /data realizado e validado nesta data. A recuperação das mídias antigas não é obrigatória: novos arquivos podem ser cadastrados pelo painel. A seção de migração abaixo registra um procedimento histórico opcional. Para backup automático externo sem depender de Pro, consulte [EXTERNAL-BACKUP-R2.md](EXTERNAL-BACKUP-R2.md); integração desativada por padrão. Esta PR não faz deploy, muda senhas ou restaura o volume.
+
 # Publicação e preservação — BY LETÍCIA
 
 Nenhum deploy, DNS, configuração Railway ou credencial de produção foi alterado nesta tarefa. A publicação depende de autorização do responsável, depois da conferência dos dados reais.
