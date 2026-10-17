@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
-import { ArticleGridSlot, Latest, Newsletter, Visual } from "@/components/Site";
+import { ArticleGridSlot, Card, Latest, Newsletter, Visual } from "@/components/Site";
 import { arrangeArticleTiles } from "@/lib/article-layout";
 import { readArticles } from "@/lib/article-store";
 import { readSiteConfig, type TextStyle } from "@/lib/site-config";
