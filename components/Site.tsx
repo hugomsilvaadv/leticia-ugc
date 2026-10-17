@@ -1,5 +1,7 @@
 import NewsletterForm from "@/components/NewsletterForm";
 import SharedMedia from "@/components/Media";
+import CinematicHeroMedia from "@/components/CinematicHeroMedia";
+import { isVideoFile } from "@/lib/media";
 import Link from "next/link";
 import MobileNavigation from "@/components/MobileNavigation";
 import type { CSSProperties } from "react";
@@ -99,7 +101,11 @@ export function Visual({
           kind === "hero" ? "heroPhotoFrame" : "visual mediaVisual " + kind
         }
       >
-        <SharedMedia asset={asset} alt={label} priority={kind === "hero"} />
+        {kind === "hero" && isVideoFile(asset.url) ? (
+          <CinematicHeroMedia asset={asset} />
+        ) : (
+          <SharedMedia asset={asset} alt={label} priority={kind === "hero"} />
+        )}
       </div>
     );
   }

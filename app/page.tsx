@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import { Card, Latest, Newsletter, Visual } from "@/components/Site";
 import { readArticles } from "@/lib/article-store";
 import { readSiteConfig, type TextStyle } from "@/lib/site-config";
+import { isVideoFile, safeMediaUrl } from "@/lib/media";
 
 export const dynamic = "force-dynamic";
 
@@ -33,12 +34,21 @@ export default async function Home() {
     (article) => article.category === "Beleza",
   );
   const { hero, lookbook, beauty, ugc, newsletter } = config.home;
+  const coverMedia = hero.media.url ? hero.media : lead?.hero;
+  const candidateCover = coverMedia && isVideoFile(coverMedia.url)
+    ? coverMedia.poster || "/images/leticia-hero.jpg"
+    : coverMedia?.url || "/images/leticia-hero.jpg";
+  const coverUrl = safeMediaUrl(candidateCover) ? candidateCover : "/images/leticia-hero.jpg";
+  const coverStyle = {
+    "--editorial-photo-bleed": `url(${JSON.stringify(coverUrl)})`,
+    "--editorial-photo-focus": `${coverMedia?.positionX ?? 50}% ${coverMedia?.positionY ?? 50}%`,
+  } as CSSProperties;
 
   return (
-    <main id="conteudo">
+    <main id="conteudo" className="homeEditorial">
       {lead && (
         <section className="lead shell">
-          <div className="leadMain">
+          <div className="leadMain" style={coverStyle}>
             <Visual
               kind="hero"
               label="Letícia Leite · moda & estilo"
