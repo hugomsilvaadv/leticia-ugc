@@ -53,7 +53,7 @@ A direção visual completa está em `docs/DESIGN-SYSTEM.md`.
 - `docs/ANTIGRAVITY-BRIEF.md`: prompt inicial para o Google Antigravity
 
 ## Status
-Aplicação Next.js implementada; a publicação da integração do Linktree depende da importação e conferência dos dados reais.
+Aplicação Next.js implementada e busca editorial publicada pela PR #6. O Linktree preserva textos/estrutura e permite cadastrar novas fotos e vídeos pelo painel; não é necessário recuperar as mídias antigas.
 
 ## Desenvolvimento implementado
 
@@ -61,4 +61,12 @@ A aplicação atual usa Next.js App Router, TypeScript e CSS editorial. O painel
 
 Instalação reproduzível: `npm ci`. Validação: `npm test`, `npm run test:e2e`, `npm run build` e `npm run typecheck`. A suíte E2E usa dados temporários isolados; não aponte testes para o volume real.
 
-A importação dos dados publicados do Linktree é um pré-requisito da sua ativação em produção. Consulte [publicação e preservação](docs/DEPLOYMENT.md) e [relatório da auditoria](docs/AUDIT-AND-DELIVERY.md). Nenhum deploy é executado pelos comandos de validação.
+A importação do Linktree antigo é uma alternativa histórica, não um pré-requisito para cadastrar novas mídias no painel. Consulte [publicação e preservação](docs/DEPLOYMENT.md) e [relatório da auditoria](docs/AUDIT-AND-DELIVERY.md). Nenhum deploy é executado pelos comandos de validação.
+
+## Integração preparada para revisão — 17/10/2026
+
+Newsletter com consentimento e lista privada em `CONTENT_DATA_DIR/newsletter.json`; `/admin` → **Inscritos** permite consulta, CSV e exclusão. `/newsletter` oferece exclusão por link individual e contato para solicitações; `/privacidade` explica o tratamento. Campanhas permanecem desativadas e nenhum e-mail de confirmação é enviado.
+
+Backup automático com restic/R2 é **opcional e desativado por padrão**. O site continua iniciando sem credenciais R2. Configuração, retenção e recuperação: [EXTERNAL-BACKUP-R2.md](docs/EXTERNAL-BACKUP-R2.md). O backup externo real de /data foi informado pelo responsável como realizado e validado em 17/10/2026; esta integração não o repete nem altera o volume.
+
+Escopo e evidências da integração: [RELEASE-INTEGRATION-20261017.md](docs/RELEASE-INTEGRATION-20261017.md). Nenhum merge/deploy é feito por comandos de validação.

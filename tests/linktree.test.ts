@@ -107,3 +107,10 @@ test("upload-ready Linktree keeps all published text and styling but no old Blob
   assert.ok(config.links.every(link => link.href.length > 0));
   assert.ok(config.services.every(service => service.href.length > 0));
 });
+
+test("public snapshot is publishable and indexable, git reference is not", async () => {
+ const {isPublishedLinktree} = await import("../lib/linktree-model");
+ assert.equal(isPublishedLinktree("published-snapshot"), true);
+ assert.equal(isPublishedLinktree("imported"), true);
+ assert.equal(isPublishedLinktree("git-reference"), false);
+});

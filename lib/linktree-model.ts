@@ -360,3 +360,8 @@ export function publicLinktree(config: LinktreeConfig) {
     provenance: { kind: config.provenance.kind },
   };
 }
+
+// The public page and sitemap must agree on published bootstraps.
+export function isPublishedLinktree(kind: string): boolean {
+  return kind === "imported" || kind === "published-snapshot";
+}

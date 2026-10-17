@@ -1,5 +1,6 @@
 "use client";
 import { UploadActivity } from "@/components/admin/UploadActivity";
+import NewsletterAdmin from "@/components/admin/NewsletterAdmin";
 import LinktreeEditor from "@/components/admin/LinktreeEditor";
 import LinktreeView from "@/components/LinktreeView";
 import type { LinktreeConfig } from "@/lib/linktree-model";
@@ -328,6 +329,7 @@ export default function AdminEditor() {
     () => [
       { label: "Visão geral", tabs: [["dashboard", "Dashboard"]] },
       { label: "Linktree", tabs: [["linktree", "Perfil, links e vídeos"]] },
+      { label: "Newsletter", tabs: [["inscritos", "Inscritos"]] },
       { label: "Mídia", tabs: [["biblioteca", "Biblioteca de arquivos"]] },
       {
         label: "Conteúdo e publicações",
@@ -422,10 +424,15 @@ export default function AdminEditor() {
         "Edite o convite para o portfólio na capa. A página UGC e a galeria têm seções próprias.",
       href: "/",
     },
+    inscritos: {
+      title: "Newsletter → Inscritos",
+      description: "Lista privada, exportação CSV e exclusão de inscrições. Campanhas ainda desativadas.",
+      href: "/newsletter",
+    },
     newsletter: {
       title: "Chamada da newsletter",
       description:
-        "Edite o texto da capa. O cadastro de e-mails requer uma integração de envio.",
+        "Edite o texto da capa. Consulte os cadastros em Inscritos; campanhas ainda desativadas.",
       href: "/",
     },
     "pagina-ugc": {
@@ -615,7 +622,7 @@ export default function AdminEditor() {
         ? "portfolio"
         : tab === "linktree"
           ? "linktree"
-          : tab === "dashboard" || tab === "biblioteca"
+          : tab === "dashboard" || tab === "biblioteca" || tab === "inscritos"
             ? null
             : "site-config";
   const fullContentReady =
@@ -829,6 +836,7 @@ export default function AdminEditor() {
                   ))}
                 </div>
               )}
+              {tab === "inscritos" && authenticated && <NewsletterAdmin password={password} />}
               {tab === "biblioteca" && <MediaLibrary password={password} />}
               {tab === "linktree" &&
                 (linktree && authenticated && fullContentReady ? (

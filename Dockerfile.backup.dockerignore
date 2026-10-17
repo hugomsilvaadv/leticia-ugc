@@ -1,0 +1,15 @@
+.git
+node_modules
+.next*
+.env*
+!.env.example
+.superpowers
+.onboarding
+.agents
+.codex
+.aws
+test-results
+playwright-report
+evidence
+attachments
+**/*.log
