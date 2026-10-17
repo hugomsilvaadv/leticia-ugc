@@ -31,6 +31,7 @@ function currentSections(articles: ArticleRecord[], featuredSlug: string) {
 
 export default function ArticleLayoutEditor({ layout, articles, featuredSlug, onChange }: Props) {
   const [dragging, setDragging] = useState("");
+  const [dropTarget, setDropTarget] = useState("");
   const stage = useRef<HTMLDivElement>(null);
   const moving = useRef<{
     section: ArticleLayoutSection; source: string; over: string | null;
@@ -66,6 +67,7 @@ export default function ArticleLayoutEditor({ layout, articles, featuredSlug, on
     event.currentTarget.setPointerCapture(event.pointerId);
     moving.current = { section, source: slug, over: null };
     setDragging(slug);
+    setDropTarget("");
   }
 
   function moveOrderPointer(event: PointerEvent<HTMLButtonElement>) {
@@ -73,16 +75,29 @@ export default function ArticleLayoutEditor({ layout, articles, featuredSlug, on
     if (!active) return;
     const tile = document.elementFromPoint(event.clientX, event.clientY)
       ?.closest<HTMLElement>("[data-layout-tile]");
-    if (tile?.closest(`[data-layout-builder="${active.section}"]`) && tile.dataset.layoutTile !== active.source) {
-      active.over = tile.dataset.layoutTile ?? null;
-    }
+    const found = tile?.closest(`[data-layout-builder="${active.section}"]`) && tile.dataset.layoutTile !== active.source
+      ? tile.dataset.layoutTile ?? null : null;
+    active.over = found;
+    setDropTarget(found || "");
   }
 
-  function finishOrderDrag() {
+  function finishOrderDrag(event: PointerEvent<HTMLButtonElement>) {
     const active = moving.current;
+    if (!active) return;
+    const tile = document.elementFromPoint(event.clientX, event.clientY)
+      ?.closest<HTMLElement>("[data-layout-tile]");
+    const target = tile?.closest(`[data-layout-builder="${active.section}"]`) && tile.dataset.layoutTile !== active.source
+      ? tile.dataset.layoutTile : active.over;
     moving.current = null;
     setDragging("");
-    if (active?.over) move(active.section, active.source, active.over);
+    setDropTarget("");
+    if (target) move(active.section, active.source, target);
+  }
+
+  function cancelOrderDrag() {
+    moving.current = null;
+    setDragging("");
+    setDropTarget("");
   }
 
   function pointerDown(event: PointerEvent<HTMLButtonElement>, section: ArticleLayoutSection, row: ArticleTileLayout, columns: number) {
@@ -153,7 +168,7 @@ export default function ArticleLayoutEditor({ layout, articles, featuredSlug, on
                   return (
                     <article
                       key={article.slug}
-                      className={"layoutBuilderTile" + (dragging === article.slug ? " isDragging" : "")}
+                      className={"layoutBuilderTile" + (dragging === article.slug ? " isDragging" : "") + (dropTarget === article.slug ? " isDropTarget" : "")}
                       data-layout-tile={article.slug}
                       style={previewStyle}
                     >
@@ -169,7 +184,7 @@ export default function ArticleLayoutEditor({ layout, articles, featuredSlug, on
                           onPointerDown={(event) => startOrderDrag(event, section.key, article.slug)}
                           onPointerMove={moveOrderPointer}
                           onPointerUp={finishOrderDrag}
-                          onPointerCancel={finishOrderDrag}
+                          onPointerCancel={cancelOrderDrag}
                         >⋮⋮ Arraste</button>
                       </div>
                       <div className="layoutBuilderCardInfo">
