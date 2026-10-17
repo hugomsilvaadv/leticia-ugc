@@ -715,7 +715,7 @@ export default function AdminEditor() {
     <UploadActivity.Provider
       value={(delta) => setActiveUploads((n) => Math.max(0, n + delta))}
     >
-      <div className="adminOverlay">
+      <div className="adminOverlay adminWorkspace">
         <main className="adminPanel" id="conteudo">
           <div className="adminTop">
             <div>
@@ -749,25 +749,25 @@ export default function AdminEditor() {
             </button>
           </label>
 
-          <nav className="adminTabs" aria-label="Seções do editor">
-            {tabGroups.map((group) => (
-              <div className="adminTabGroup" key={group.label}>
-                <strong>{group.label}</strong>
-                <div className="adminTabItems">
+          <div className="adminSectionPicker">
+            <label htmlFor="admin-section-select">Escolha a parte do site para editar</label>
+            <select
+              id="admin-section-select"
+              aria-label="Selecionar seção do site"
+              value={tab}
+              onChange={(event) => setTab(event.target.value)}
+            >
+              {tabGroups.map((group) => (
+                <optgroup key={group.label} label={group.label}>
                   {group.tabs.map(([id, label]) => (
-                    <button
-                      type="button"
-                      key={id}
-                      className={tab === id ? "active" : ""}
-                      onClick={() => setTab(id)}
-                    >
+                    <option key={id} value={id}>
                       {label}
-                    </button>
+                    </option>
                   ))}
-                </div>
-              </div>
-            ))}
-          </nav>
+                </optgroup>
+              ))}
+            </select>
+          </div>
 
           <div className="adminSectionInfo">
             <span className="adminBreadcrumb">
@@ -1645,15 +1645,11 @@ export default function AdminEditor() {
         <aside className="adminPreview" aria-label="Prévia do site">
           <div className="adminPreviewToolbar">
             <div>
-              <strong>
-                {tab === "artigos"
-                  ? "Prévia da matéria"
-                  : "Prévia da página correspondente"}
-              </strong>
+              <strong>Site em tempo real</strong>
               <span>
-                {tab === "artigos"
-                  ? "A matéria muda aqui enquanto você edita."
-                  : "Textos e fotos atualizam na prévia. A galeria atualiza após salvar."}
+                {tabInfo[tab]?.title} · {tab === "artigos"
+                  ? "A matéria muda enquanto você edita."
+                  : "Confira o resultado antes de salvar."}
               </span>
             </div>
             <div className="previewModeButtons">

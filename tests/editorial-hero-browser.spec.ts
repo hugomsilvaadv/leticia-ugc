@@ -77,7 +77,7 @@ test("admin-selected MP4 activates background video; reduced-motion keeps the po
     await page.getByLabel("Senha do painel", { exact: true }).fill(password);
     await page.getByRole("button", { name: "Validar acesso", exact: true }).click();
     await expect(page.getByText("Senha validada. Você pode salvar alterações.", { exact: false })).toBeVisible();
-    await page.getByRole("button", { name: "Destaque da capa", exact: true }).click();
+    await page.getByRole("combobox", { name: "Selecionar seção do site" }).selectOption("hero");
     await expect(page.getByLabel("Foto ou vídeo de abertura (MP4/WebM, até 30 MB) — enviar arquivo")).toBeVisible();
     await expect(page.getByText("Fundo da página inicial — independente da matéria:", { exact: false })).toBeVisible();
   } finally {

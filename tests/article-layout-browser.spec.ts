@@ -12,7 +12,7 @@ test("authenticated visual layout editor reorders and resizes homepage article c
     await page.getByLabel("Senha do painel", { exact: true }).fill(password);
     await page.getByRole("button", { name: "Validar acesso", exact: true }).click();
     await expect(page.getByText("Senha validada. Você pode salvar alterações.", { exact: false })).toBeVisible();
-    await page.getByRole("button", { name: "Layout das matérias", exact: true }).click();
+    await page.getByRole("combobox", { name: "Selecionar seção do site" }).selectOption("layout-materias");
 
     const workspaceHeight = await page.locator(".adminControls").evaluate((el) => el.getBoundingClientRect().height);
     expect(workspaceHeight).toBeGreaterThan(200);
@@ -75,7 +75,7 @@ test("layout cards can be restored without affecting published article data", as
   await page.getByLabel("Senha do painel", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Validar acesso", exact: true }).click();
   await expect(page.getByText("Senha validada. Você pode salvar alterações.", { exact: false })).toBeVisible();
-  await page.getByRole("button", { name: "Layout das matérias", exact: true }).click();
+  await page.getByRole("combobox", { name: "Selecionar seção do site" }).selectOption("layout-materias");
   const section = page.locator('.layoutBuilderSection[aria-label="moda"]');
   // The visible section is identified by its public label, not an article's content.
   const moda = page.locator('.layoutBuilderSection[aria-label="Editoria Moda"]');
@@ -91,7 +91,7 @@ test("mouse pointer on resize handle changes both width and height without savin
   await page.getByLabel("Senha do painel", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Validar acesso", exact: true }).click();
   await expect(page.getByText("Senha validada. Você pode salvar alterações.", { exact: false })).toBeVisible();
-  await page.getByRole("button", { name: "Layout das matérias", exact: true }).click();
+  await page.getByRole("combobox", { name: "Selecionar seção do site" }).selectOption("layout-materias");
   const section = page.locator('[data-layout-builder="moda"]');
   const card = section.locator(".layoutBuilderTile").first();
   const handle = card.locator(".layoutBuilderResize");

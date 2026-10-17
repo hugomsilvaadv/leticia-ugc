@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./refero-editorial.css";
 import "./editorial-layout.css";
+import "./admin-workspace.css";
 import { Footer, Header } from "@/components/Site";
 import PreviewBridge from "@/components/PreviewBridge";
 
