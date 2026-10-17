@@ -248,19 +248,17 @@ body:has(main.homeEditorial) > header .wordmark {
   content: none;
 }
 
-/* Override the pre-existing mobile "natural image height" policy ONLY for
- * this cinematic cover. Other photographs keep their uncropped mobile rules. */
+/* Only uploaded videos use cinematic cropping on mobile. The existing
+ * whole-photo aspect ratio rule remains in force for ordinary images. */
 @media (max-width: 800px) {
-  .homeEditorial .leadMain > .heroPhotoFrame {
+  .homeEditorial .leadMain > .heroPhotoFrame:has(> video) {
     position: absolute !important;
     inset: 0 !important;
     width: 100% !important;
     height: 100% !important;
-    min-height: 0 !important;
     aspect-ratio: auto !important;
     overflow: hidden !important;
   }
-  .homeEditorial .leadMain > .heroPhotoFrame > img,
   .homeEditorial .leadMain > .heroPhotoFrame > video {
     position: absolute !important;
     inset: 0 !important;
@@ -312,4 +310,28 @@ body:has(main.homeEditorial) > header .wordmark {
   .homeEditorial .leadSide,
   .homeEditorial .section,
   .homeEditorial .lookbook { min-width: 0; }
+}
+
+/* Constrain very long editorial links/headlines without hiding content. */
+.homeEditorial h1 a,
+.homeEditorial h2 a,
+.homeEditorial h3 a,
+.homeEditorial .textLink {
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+@media (max-width: 560px) {
+  .homeEditorial .leadCopy .textLink {
+    display: inline-block;
+    max-width: 100%;
+    white-space: normal;
+  }
+  .homeEditorial .sectionHead {
+    flex-wrap: wrap;
+  }
+  .homeEditorial .sectionHead .textLink,
+  .homeEditorial .lookbook .textLink {
+    white-space: normal;
+    max-width: 100%;
+  }
 }
