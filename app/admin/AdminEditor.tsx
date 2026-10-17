@@ -529,7 +529,7 @@ export default function AdminEditor() {
 
   if (!config)
     return (
-      <div className="adminOverlay adminWorkspace">
+      <div className="adminOverlay">
         <div className="adminLoading" role="status">
           {status}
         </div>
@@ -715,7 +715,7 @@ export default function AdminEditor() {
     <UploadActivity.Provider
       value={(delta) => setActiveUploads((n) => Math.max(0, n + delta))}
     >
-      <div className="adminOverlay">
+      <div className="adminOverlay adminWorkspace">
         <main className="adminPanel" id="conteudo">
           <div className="adminTop">
             <div>
