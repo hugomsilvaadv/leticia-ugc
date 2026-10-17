@@ -17,6 +17,9 @@ test("editorial homepage keeps saved copy, article CTA and sections at all sizes
     await expect(page.locator(".leadSide .card")).toHaveCount(2);
     await expect(page.locator(".newsletterSignup")).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+    if (width === 390 || width === 1440) {
+      await page.screenshot({ path: test.info().outputPath(`byleticia-refero-${width}px.png`), fullPage: true });
+    }
   }
 });
 
