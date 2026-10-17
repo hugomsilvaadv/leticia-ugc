@@ -209,9 +209,7 @@ test("admin saves only changed collection and retains unsaved changes when save 
   page.on("request", (r) => {
     if (r.method() === "PUT") puts.push(new URL(r.url()).pathname);
   });
-  await page
-    .getByRole("button", { name: "Destaque da capa", exact: true })
-    .click();
+  await page.getByRole("combobox", { name: "Selecionar seção do site" }).selectOption("hero");
   const title = page.getByRole("textbox", {
     name: "Título principal",
     exact: true,
@@ -474,9 +472,7 @@ test("upload in progress locks editing to protect newer content and unlocks afte
 }) => {
   await page.goto("/admin");
   await unlockAdmin(page);
-  await page
-    .getByRole("button", { name: "Matérias e capas", exact: true })
-    .click();
+  await page.getByRole("combobox", { name: "Selecionar seção do site" }).selectOption("artigos");
   const title = page.getByLabel("Título", { exact: true });
   await title.fill("Título antes do upload");
   let release!: () => void;
@@ -502,15 +498,11 @@ test("a conflicted collection does not block saving other valid edits", async ({
 }) => {
   await page.goto("/admin");
   await unlockAdmin(page);
-  await page
-    .getByRole("button", { name: "Destaque da capa", exact: true })
-    .click();
+  await page.getByRole("combobox", { name: "Selecionar seção do site" }).selectOption("hero");
   await page
     .getByRole("textbox", { name: "Título principal", exact: true })
     .fill("Home editada em teste");
-  await page
-    .getByRole("button", { name: "Matérias e capas", exact: true })
-    .click();
+  await page.getByRole("combobox", { name: "Selecionar seção do site" }).selectOption("artigos");
   await page
     .getByLabel("Título", { exact: true })
     .fill("Matéria editada em teste");
@@ -688,9 +680,7 @@ test("appearance controls change desktop headline size in the live preview", asy
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/admin");
   await unlockAdmin(page);
-  await page
-    .getByRole("button", { name: "Destaque da capa", exact: true })
-    .click();
+  await page.getByRole("combobox", { name: "Selecionar seção do site" }).selectOption("hero");
   const card = page
     .locator(".adminFields > .adminCard")
     .filter({ has: page.getByText("Título principal", { exact: true }) });
