@@ -35,7 +35,7 @@ export default async function Home() {
   const { hero, lookbook, beauty, ugc, newsletter } = config.home;
 
   return (
-    <main id="conteudo">
+    <main id="conteudo" className="homeEditorial">
       {lead && (
         <section className="lead shell">
           <div className="leadMain">
