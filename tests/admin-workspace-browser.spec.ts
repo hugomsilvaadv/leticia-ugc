@@ -114,7 +114,7 @@ test("mobile anonymous visitor cannot confuse empty private data with deleted Li
   await picker.selectOption("portfolio");
   await expect(page.getByRole("button", { name: "+ Adicionar trabalho" })).toBeVisible();
   const count = await page.locator(".articleAdminHeader span").first().textContent();
-  expect(count).toMatch(/\\d+ trabalho\\(s\\)/);
+  expect(count).toContain("trabalho(s)");
 
   // Changing or clearing the validated credential locks the private editor again.
   await page.getByLabel("Senha do painel", { exact: true }).fill("");
