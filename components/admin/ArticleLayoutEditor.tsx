@@ -174,7 +174,8 @@ export default function ArticleLayoutEditor({ layout, articles, featuredSlug, on
                         onPointerUp={() => { resize.current = null; }}
                         onPointerCancel={() => { resize.current = null; }}
                         onKeyDown={(e) => {
-                          const delta = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -30], ArrowDown: [0, 30] }[e.key];
+                          const steps: Record<string, [number, number]> = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -30], ArrowDown: [0, 30] };
+                          const delta = steps[e.key];
                           if (!delta) return;
                           e.preventDefault();
                           updateTile(section.key, row.slug, {
