@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests",
-  testMatch: ["browser.spec.ts", "search-browser.spec.ts", "release-browser.spec.ts", "editorial-hero-browser.spec.ts", "article-layout-browser.spec.ts"],
+  testMatch: ["browser.spec.ts", "search-browser.spec.ts", "release-browser.spec.ts", "editorial-hero-browser.spec.ts", "article-layout-browser.spec.ts", "admin-workspace-browser.spec.ts"],
   workers: 1,
   timeout: 60000,
   use: {
