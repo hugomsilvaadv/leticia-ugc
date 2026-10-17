@@ -1,0 +1,201 @@
+/* Owner-approved admin workspace, based on the hand-drawn split-panel plan.
+ * Left: one dropdown and a scrollable editor. Right: the real iframe preview.
+ * This is intentionally restricted to the admin overlay. */
+.adminOverlay.adminWorkspace {
+  grid-template-columns: minmax(330px, 390px) minmax(0, 1fr);
+  height: 100dvh;
+  overflow: hidden;
+  background: #f3eee9;
+}
+.adminWorkspace .adminPanel {
+  height: 100dvh;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+.adminWorkspace .adminTop {
+  flex: 0 0 auto;
+  padding: 12px 16px 9px;
+  gap: 8px;
+}
+.adminWorkspace .adminTop h1 {
+  font-size: 23px;
+  line-height: 1.15;
+}
+.adminWorkspace .adminTop > a {
+  white-space: nowrap;
+}
+.adminWorkspace .adminPassword {
+  flex: 0 0 auto;
+  display: grid;
+  padding: 9px 14px 10px;
+  gap: 5px;
+  min-height: 0;
+  border-bottom: 1px solid #e4d9d1;
+}
+.adminWorkspace .adminPassword input {
+  min-width: 0;
+  min-height: 36px;
+  padding: 7px 10px;
+}
+.adminWorkspace .adminPassword button {
+  min-height: 34px;
+  padding: 6px 11px;
+  font-size: 12px;
+}
+.adminWorkspace .adminSectionPicker {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 8px;
+  padding: 11px 15px 13px;
+  border-bottom: 1px solid #ded3cb;
+  background: #f8f2ec;
+}
+.adminWorkspace .adminSectionPicker label {
+  font-size: 11px;
+  letter-spacing: .035em;
+  font-weight: 700;
+  color: #604c40;
+}
+.adminWorkspace .adminSectionPicker select {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 36px 10px 12px;
+  border: 1px solid #aa988b;
+  border-radius: 3px;
+  background: white;
+  color: #30251e;
+  font: 600 14px/1.2 Arial, sans-serif;
+  cursor: pointer;
+}
+.adminWorkspace .adminSectionPicker select:focus-visible {
+  outline: 2px solid #80543e;
+  outline-offset: 2px;
+}
+.adminWorkspace .adminSectionInfo {
+  flex: 0 0 auto;
+  padding: 9px 15px 10px;
+  background: #faf7f3;
+  border-bottom: 1px solid #e8ddd4;
+}
+.adminWorkspace .adminSectionInfo .adminBreadcrumb,
+.adminWorkspace .adminSectionInfo p {
+  display: none;
+}
+.adminWorkspace .adminSectionInfo strong {
+  font-size: 16px;
+  line-height: 1.2;
+}
+.adminWorkspace .adminSectionInfo a {
+  font-size: 11px;
+}
+.adminWorkspace .adminControls {
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  min-width: 0;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  display: block;
+  padding: 13px 15px 20px !important;
+  overscroll-behavior: contain;
+  scroll-padding-top: 12px;
+}
+.adminWorkspace .adminControls > .adminFields {
+  display: grid;
+  gap: 14px;
+  min-height: 0;
+  min-width: 0;
+}
+.adminWorkspace .adminSaveBar {
+  flex: 0 0 auto;
+  min-height: 56px;
+  padding: 9px 12px;
+  gap: 9px;
+  background: #f9f5f0;
+  z-index: 3;
+}
+.adminWorkspace .adminSaveBar button {
+  min-height: 38px;
+  padding: 8px 12px;
+}
+.adminWorkspace .adminSaveBar span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.adminWorkspace .adminPreview {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  height: 100dvh;
+  padding: 16px;
+  overflow: hidden;
+}
+.adminWorkspace .adminPreviewToolbar {
+  align-items: center;
+  gap: 10px;
+}
+.adminWorkspace .adminPreviewToolbar strong {
+  color: #36271f;
+}
+.adminWorkspace .previewBrowser {
+  min-height: 0;
+}
+@media (max-width: 850px) and (min-width: 761px) {
+  .adminOverlay.adminWorkspace {
+    grid-template-columns: minmax(305px, 350px) minmax(0, 1fr);
+  }
+  .adminWorkspace .adminPreview { padding: 10px; }
+}
+@media (max-width: 760px) {
+  .adminOverlay.adminWorkspace {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    grid-template-columns: none;
+  }
+  .adminWorkspace .adminPanel {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    flex: 0 0 auto;
+  }
+  .adminWorkspace .adminTop { padding: 12px 15px 8px; }
+  .adminWorkspace .adminSectionPicker { padding: 11px 15px; }
+  .adminWorkspace .adminControls {
+    flex: 0 0 auto !important;
+    height: min(52dvh, 540px);
+    min-height: 260px !important;
+    max-height: none;
+    overflow-y: auto !important;
+  }
+  .adminWorkspace .adminSaveBar {
+    position: sticky;
+    bottom: 0;
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+  }
+  .adminWorkspace .adminPreview {
+    display: flex !important;
+    flex: 0 0 auto;
+    height: min(72dvh, 670px) !important;
+    min-height: 490px;
+    padding: 12px;
+    border-top: 1px solid #d9cec4;
+  }
+  .adminWorkspace .adminPreviewFrame {
+    max-width: none;
+  }
+  .adminWorkspace .adminPreviewToolbar {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 360px) {
+  .adminWorkspace .adminSaveBar { flex-wrap: wrap; }
+  .adminWorkspace .adminSaveBar button { margin-left: auto; }
+}
