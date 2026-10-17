@@ -1398,13 +1398,28 @@ export default function AdminEditor() {
                       }
                     />
                   </div>
+                  <p className="adminHint">
+                    <strong>Fundo da página inicial — independente da matéria:</strong>{" "}
+                    escolha aqui qualquer fotografia ou vídeo (MP4/WebM) para
+                    aparecer atrás de LETÍCIA LEITE. Essa mídia é exclusiva da
+                    abertura do site e não altera a foto da matéria vinculada,
+                    que continua sendo editada na seção de artigos.
+                  </p>
                   <MediaControl
                     label="Foto ou vídeo de abertura (MP4/WebM, até 30 MB)"
                     asset={h.hero.media}
                     password={password}
                     onChange={(media) => setHome("hero", { media })}
                   />
-                  <p className="adminHint">A abertura editorial usa automaticamente um MP4/WebM como vídeo silencioso em loop. Para voltar à fotografia, selecione uma imagem aqui. A opção Miniatura do vídeo define a imagem de carregamento e de acessibilidade (preferência por movimento reduzido). Textos, botão, destino da matéria e enquadramento continuam editáveis neste painel. Salve e confira a prévia.</p>
+                  <p className="adminHint">
+                    A foto ou vídeo selecionado aqui ocupa apenas a capa do site.
+                    Para mudar a imagem exibida ao clicar em “Ler matéria”,
+                    edite a própria matéria no painel. Vídeos de abertura
+                    reproduzem sem som e em loop; a miniatura serve como imagem
+                    de carregamento e para quem prefere movimento reduzido.
+                    O título e o botão da matéria ficam no canto inferior esquerdo.
+                    Salve e confira a prévia.
+                  </p>
                 </>
               )}
 
