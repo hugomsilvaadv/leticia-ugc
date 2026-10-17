@@ -11,6 +11,25 @@ Source provided by site owner: Refero's ALIGNE `DESIGN.md`, `tokens.json`, `vari
 - The visual CSS is isolated in `app/refero-editorial.css` and applied only to `main.homeEditorial`/its site header. The admin panel, article content, UGC detail page, and Linktree keep their previous interface pending approval.
 - This is a first demonstrable homepage pass, **not a completed redesign of every route**, and no production deploy or direct change to Railway is part of the branch.
 
+## Approved visual direction — Option B (luxury)
+
+Visual selection approved by the site owner on 17 October 2026.
+The white/ivory masthead strip is removed **on the homepage only**.
+The existing brand wordmark is positioned in the upper-middle portion
+of the full-width image/video, centered horizontally, in warm white serif
+type with a subtle text shadow and a nearly imperceptible localized veil.
+No opaque band, rectangular pill, new image or third-party font is introduced.
+
+Technical detail: the same server-rendered `Header` continues to read
+`config.brand.wordmark` and `config.brand.wordmarkStyle` from the existing
+`/admin` editor. Only scoped CSS positions that existing element above the
+homepage cover. Navigation remains accessible at the top left, utility copy
+is preserved, and other pages retain the previous masthead.
+
+The cover story's headline, eyebrow, summary and article CTA continue to
+appear at the bottom-left of the photograph; no text or article destination
+is changed. Motion-safe photo fallback remains available.
+
 ## New homepage visual hierarchy
 
 - Hero image or 6–10 second owner-provided local MP4/WebM across the full width, with the *existing* title, eyebrow, dek and CTA overlaid.
