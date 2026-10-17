@@ -89,3 +89,41 @@ test("admin-selected MP4 activates background video; reduced-motion keeps the po
     expect(restored.status()).toBe(200);
   }
 });
+
+test("approved luxury option B places the editable brand on the cover without a white band", async ({ page, request }) => {
+  const config = await (await request.get("/api/site-config")).json();
+  for (const width of [320, 390, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/");
+    const wordmark = page.locator("header .wordmark");
+    await expect(wordmark).toHaveText(config.brand.wordmark);
+    await expect(wordmark).toBeVisible();
+    const positions = await page.evaluate(() => {
+      const header = document.querySelector("body > header") as HTMLElement;
+      const brand = document.querySelector("header .wordmark") as HTMLElement;
+      const hero = document.querySelector("main.homeEditorial .leadMain") as HTMLElement;
+      const name = brand.getBoundingClientRect();
+      const cover = hero.getBoundingClientRect();
+      return {
+        brandTop: name.top,
+        brandBottom: name.bottom,
+        brandCenter: (name.left + name.right) / 2,
+        coverTop: cover.top,
+        coverBottom: cover.bottom,
+        headerBg: getComputedStyle(header).backgroundColor,
+        brandColor: getComputedStyle(brand).color,
+        brandPosition: getComputedStyle(brand).position,
+      };
+    });
+    expect(positions.headerBg).toBe("rgba(0, 0, 0, 0)");
+    expect(positions.brandPosition).toBe("absolute");
+    expect(positions.brandColor).toBe("rgb(255, 253, 248)");
+    expect(positions.brandTop).toBeGreaterThan(positions.coverTop);
+    expect(positions.brandBottom).toBeLessThan(positions.coverBottom);
+    expect(Math.abs(positions.brandCenter - width / 2)).toBeLessThan(28);
+    const menu = page.getByRole("button", { name: "Abrir menu de navegação" });
+    await menu.click();
+    await expect(page.getByRole("dialog", { name: "Menu de navegação" })).toBeVisible();
+    await page.getByRole("button", { name: "Fechar menu" }).click();
+  }
+});
