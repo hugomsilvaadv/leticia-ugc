@@ -444,3 +444,27 @@ body:has(main.homeEditorial) > header .masthead .wordmark::before {
     top: 150px;
   }
 }
+
+/* Mobile photography remains at its full natural proportions (existing
+ * regression contract). Continue the *same admin-selected photo* behind the
+ * story area with a soft out-of-focus bleed, so no solid black rectangle
+ * appears below the image. Video backgrounds retain their cinematic crop. */
+@media (max-width: 800px) {
+  .homeEditorial .leadMain::before {
+    content: "";
+    position: absolute;
+    inset: -20px;
+    z-index: 0;
+    pointer-events: none;
+    background-color: #746962;
+    background-image: var(--editorial-photo-bleed, none);
+    background-size: cover;
+    background-position: var(--editorial-photo-focus, center);
+    filter: blur(18px) brightness(.68);
+    transform: scale(1.045);
+  }
+  .homeEditorial .leadMain > .heroPhotoFrame:not(:has(> video)) {
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 82%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 82%, transparent 100%);
+  }
+}
