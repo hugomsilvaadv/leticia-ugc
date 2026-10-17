@@ -73,3 +73,32 @@ test("layout cards can be restored without affecting published article data", as
   await expect(moda.getByRole("button", { name: "Restaurar" })).toBeDisabled();
   expect(await (await request.get("/api/articles", { headers: auth })).text()).toBe(contents);
 });
+
+
+test("mouse pointer on resize handle changes both width and height without saving", async ({ page }) => {
+  await page.goto("/admin");
+  await page.getByLabel("Senha do painel", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Validar acesso", exact: true }).click();
+  await expect(page.getByText("Senha validada. Você pode salvar alterações.", { exact: false })).toBeVisible();
+  await page.getByRole("button", { name: "Layout das matérias", exact: true }).click();
+  const section = page.locator('[data-layout-builder="moda"]');
+  const card = section.locator(".layoutBuilderTile").first();
+  const handle = card.locator(".layoutBuilderResize");
+  const sizeBefore = await card.evaluate((node) => ({
+    cols: (node as HTMLElement).style.gridColumn,
+    imageHeight: Number.parseFloat((node as HTMLElement).style.getPropertyValue("--tile-editor-height")),
+  }));
+  await handle.scrollIntoViewIfNeeded();
+  const rect = await handle.boundingBox();
+  expect(rect).not.toBeNull();
+  await page.mouse.move(rect!.x + rect!.width / 2, rect!.y + rect!.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(rect!.x + rect!.width / 2 + 140, rect!.y + rect!.height / 2 + 60, { steps: 6 });
+  await page.mouse.up();
+  await expect.poll(() => card.evaluate((node) =>
+    Number.parseFloat((node as HTMLElement).style.getPropertyValue("--tile-editor-height"))
+  )).toBeGreaterThan(sizeBefore.imageHeight);
+  const cols = await card.evaluate((node) => (node as HTMLElement).style.gridColumn);
+  expect(cols).not.toBe(sizeBefore.cols);
+  await expect(page.getByText("Há alterações não salvas.", { exact: false })).toBeVisible();
+});
