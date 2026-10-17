@@ -102,6 +102,7 @@
 }
 .layoutBuilderTile:active { cursor: grabbing; }
 .layoutBuilderTile.isDragging { opacity: .4; }
+.layoutBuilderTile.isDropTarget { outline: 3px solid #85583e; outline-offset: 2px; background: #faf1e8; }
 .layoutBuilderTile:focus-within { outline: 2px solid #85766d; outline-offset: 1px; }
 .layoutBuilderThumb {
   position: relative;
