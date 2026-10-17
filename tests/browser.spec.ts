@@ -255,11 +255,9 @@ test("Linktree native editor updates, reorders, disables and persists links inde
   });
   const originalConfig = await originalResponse.json();
   await page.goto("/admin");
-  await expect(
-    page.getByRole("button", { name: "Perfil, links e vídeos" }),
-  ).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "Selecionar seção do site" })).toBeVisible();
   await unlockAdmin(page);
-  await page.getByRole("button", { name: "Perfil, links e vídeos" }).click();
+  await page.getByRole("combobox", { name: "Selecionar seção do site" }).selectOption("linktree");
   const section = page
     .locator(".linktreeEditor section")
     .filter({ has: page.getByText("Linktree → Links", { exact: true }) });
