@@ -16,7 +16,20 @@ test("editorial homepage keeps saved copy, article CTA and sections at all sizes
     await expect(hero.locator("[data-editor='home.hero.buttonText']")).toContainText(original.home.hero.buttonText);
     await expect(page.locator(".leadSide .card")).toHaveCount(2);
     await expect(page.locator(".newsletterSignup")).toBeVisible();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+    const widthAudit = await page.evaluate(() => ({
+      viewport: innerWidth,
+      scroll: document.documentElement.scrollWidth,
+      offenders: [...document.querySelectorAll<HTMLElement>("body *")]
+        .filter(node => node.getBoundingClientRect().right > innerWidth + 1)
+        .slice(0, 15)
+        .map(node => ({
+          tag: node.tagName,
+          className: typeof node.className === "string" ? node.className.slice(0, 110) : "",
+          right: Math.round(node.getBoundingClientRect().right),
+        })),
+    }));
+    if (widthAudit.scroll > widthAudit.viewport + 1) console.log("editorial-mobile-overflow", JSON.stringify(widthAudit));
+    expect(widthAudit.scroll <= widthAudit.viewport + 1).toBe(true);
     if (width === 390 || width === 1440) {
       await page.screenshot({ path: test.info().outputPath(`byleticia-refero-${width}px.png`), fullPage: true });
     }
