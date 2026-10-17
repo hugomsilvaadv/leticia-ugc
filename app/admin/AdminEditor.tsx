@@ -5,6 +5,7 @@ import LinktreeEditor from "@/components/admin/LinktreeEditor";
 import LinktreeView from "@/components/LinktreeView";
 import type { LinktreeConfig } from "@/lib/linktree-model";
 import MediaControl from "@/components/admin/MediaControl";
+import ArticleLayoutEditor from "@/components/admin/ArticleLayoutEditor";
 import MediaLibrary from "@/components/admin/MediaLibrary";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -289,6 +290,7 @@ export default function AdminEditor() {
       "pagina-sobre": "pages.about.title",
       marca: "brand.wordmark",
       hero: "home.hero.title",
+      "layout-materias": "home.articleLayout",
       lookbook: "home.lookbook.title",
       beauty: "home.beauty.title",
       ugc: "home.ugc.title",
@@ -342,6 +344,7 @@ export default function AdminEditor() {
         label: "Página inicial",
         tabs: [
           ["hero", "Destaque da capa"],
+          ["layout-materias", "Layout das matérias"],
           ["lookbook", "Looks"],
           ["beauty", "Beleza"],
           ["ugc", "Faixa UGC"],
@@ -404,6 +407,11 @@ export default function AdminEditor() {
       title: "Destaque principal da capa",
       description:
         "Foto e texto do topo do site, com escolha da matéria vinculada ao botão.",
+      href: "/",
+    },
+    "layout-materias": {
+      title: "Layout das matérias da página inicial",
+      description: "Arraste e redimensione os quadros dos destaques, Moda e Do arquivo. Salve só depois de conferir a prévia.",
       href: "/",
     },
     lookbook: {
@@ -1423,6 +1431,19 @@ export default function AdminEditor() {
                 </>
               )}
 
+              {tab === "layout-materias" && (
+                <ArticleLayoutEditor
+                  layout={h.articleLayout}
+                  articles={articles}
+                  featuredSlug={h.hero.featuredSlug}
+                  onChange={(articleLayout) =>
+                    setConfig((current) => current
+                      ? { ...current, home: { ...current.home, articleLayout } }
+                      : current)
+                  }
+                />
+              )}
+
               {tab === "lookbook" && (
                 <>
                   <TextControl
@@ -1696,6 +1717,7 @@ export default function AdminEditor() {
                       artigos: "article.title",
                       marca: "brand.wordmark",
                       hero: "home.hero.title",
+                      "layout-materias": "home.articleLayout",
                       lookbook: "home.lookbook.title",
                       beauty: "home.beauty.title",
                       ugc: "home.ugc.title",

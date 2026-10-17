@@ -1,0 +1,273 @@
+/* Drag-configurable homepage cards; default appearance is unchanged until
+ * the owner saves an explicit layout. No text or article media is rewritten. */
+.homeEditorial .editorialTiledGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: clamp(16px, 2.2vw, 28px);
+}
+.homeEditorial .leadSide.editorialTiledGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.homeEditorial .editorialTiledGrid > .layoutTile {
+  min-width: 0;
+  max-width: 100%;
+  align-self: start;
+}
+.homeEditorial .editorialTiledGrid .layoutTile > .card {
+  width: 100%;
+  min-width: 0;
+}
+@media (min-width: 801px) {
+  .homeEditorial .editorialTiledGrid .layoutTile[data-custom-size="1"] .card .visual {
+    height: var(--tile-height, 300px);
+    aspect-ratio: auto;
+    min-height: 0;
+    width: 100%;
+  }
+  .homeEditorial .editorialTiledGrid .layoutTile[data-custom-size="1"] .card .visual > img,
+  .homeEditorial .editorialTiledGrid .layoutTile[data-custom-size="1"] .card .visual .sharedMedia {
+    height: 100%;
+    width: 100%;
+    max-width: none;
+    object-fit: cover;
+  }
+}
+@media (max-width: 800px) {
+  .homeEditorial .editorialTiledGrid,
+  .homeEditorial .leadSide.editorialTiledGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 26px;
+  }
+  .homeEditorial .editorialTiledGrid > .layoutTile {
+    grid-column: auto !important;
+    width: 100%;
+  }
+  /* Preserve each original photograph on mobile. The desktop crop is visual,
+   * not a destructive edit of the uploaded image. */
+  .homeEditorial .editorialTiledGrid .layoutTile .visual {
+    height: auto !important;
+  }
+}
+
+/* Interactive workspace inside the existing authenticated /admin. */
+.layoutBuilder {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.layoutBuilderSection {
+  min-width: 0;
+}
+.layoutBuilderTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.layoutBuilderTitle > strong {
+  font: 500 17px Georgia, "Times New Roman", serif;
+}
+.layoutBuilderTitle > button {
+  background: transparent;
+  border: 1px solid #d9d0c8;
+  color: #51453f;
+  border-radius: 0;
+  padding: 7px 10px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.layoutBuilderTitle > button:disabled {
+  opacity: .45;
+  cursor: default;
+}
+.layoutBuilderGrid {
+  display: grid;
+  grid-template-columns: repeat(var(--builder-columns, 3), minmax(0, 1fr));
+  gap: 8px;
+  align-items: start;
+  min-width: 0;
+  margin-top: 8px;
+}
+.layoutBuilderTile {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-width: 0;
+  max-width: 100%;
+  border: 1px solid #d0c4ba;
+  background: #fff;
+  color: #3b2b22;
+  box-shadow: 0 2px 8px rgba(46,31,20,.05);
+  cursor: grab;
+}
+.layoutBuilderTile:active { cursor: grabbing; }
+.layoutBuilderTile.isDragging { opacity: .4; }
+.layoutBuilderTile.isDropTarget { outline: 3px solid #85583e; outline-offset: 2px; background: #faf1e8; }
+.layoutBuilderTile:focus-within { outline: 2px solid #85766d; outline-offset: 1px; }
+.layoutBuilderThumb {
+  position: relative;
+  width: 100%;
+  height: var(--tile-editor-height, 115px);
+  min-height: 62px;
+  background: linear-gradient(135deg,#e6d4c9,#b5a396);
+  overflow: hidden;
+}
+.layoutBuilderThumb > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+}
+.layoutBuilderThumb > span:not(.layoutBuilderDragLabel) {
+  display: block;
+  text-align: center;
+  padding-top: 28px;
+  font-size: 11px;
+}
+.layoutBuilderDragLabel {
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  padding: 5px 6px;
+  background: rgba(255,255,255,.93);
+  color: #3b2b22;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: grab;
+  border: 0;
+  border-radius: 0;
+  touch-action: none;
+  z-index: 4;
+}
+.layoutBuilderCardInfo {
+  padding: 7px 8px 30px;
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.layoutBuilderCardInfo > span {
+  font: 500 12px/1.3 Georgia, "Times New Roman", serif;
+  overflow-wrap: anywhere;
+}
+.layoutBuilderActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+}
+.layoutBuilderActions > button {
+  border: 1px solid #d2c5b9;
+  background: #f9f5f0;
+  color: #3b2b22;
+  font-size: 12px;
+  min-width: 25px;
+  height: 25px;
+  cursor: pointer;
+}
+.layoutBuilderActions > button:disabled { opacity: .3; cursor: default; }
+.layoutBuilderActions > span {
+  font-size: 10px;
+  color: #6a5b50;
+  white-space: nowrap;
+}
+.layoutBuilderResize {
+  position: absolute;
+  z-index: 5;
+  right: 0;
+  bottom: 0;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-top: 1px solid #d0c4ba;
+  border-left: 1px solid #d0c4ba;
+  background: #3b2b22;
+  color: white;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: nwse-resize;
+  touch-action: none;
+  user-select: none;
+}
+.layoutBuilderResize:hover,
+.layoutBuilderResize:focus-visible {
+  background: #77543f;
+  outline: 2px solid #77543f;
+  outline-offset: 2px;
+}
+@media (max-width: 430px) {
+  .layoutBuilderGrid { gap: 6px; }
+  .layoutBuilderActions > span { width: 100%; }
+  .layoutBuilderDragLabel { font-size: 9px; }
+}
+
+/* The visual builder needs real working space even on a 720px-high notebook.
+ * Compact only this admin tab; all other CMS tabs keep their current sizing. */
+@media (min-width: 761px) {
+  .adminOverlay:has(.layoutBuilder) .adminTop {
+    padding: 8px 14px;
+  }
+  .adminOverlay:has(.layoutBuilder) .adminTop h1 {
+    font-size: 21px;
+    margin: 2px 0;
+  }
+  .adminOverlay:has(.layoutBuilder) .adminPassword {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    line-height: 1.2;
+  }
+  .adminOverlay:has(.layoutBuilder) .adminPassword input {
+    flex: 1 1 145px;
+    min-width: 0;
+    min-height: 32px;
+  }
+  .adminOverlay:has(.layoutBuilder) .adminPassword button {
+    min-height: 32px;
+    padding: 5px 10px;
+  }
+  .adminOverlay:has(.layoutBuilder) .adminTabs {
+    max-height: 105px;
+    min-height: 70px;
+    flex: 0 0 auto;
+    overflow-y: auto;
+    padding: 6px 9px;
+    gap: 6px;
+  }
+  .adminOverlay:has(.layoutBuilder) .adminTabItems button {
+    min-height: 30px;
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+  .adminOverlay:has(.layoutBuilder) .adminTabGroup > strong {
+    font-size: 10px;
+  }
+  .adminOverlay:has(.layoutBuilder) .adminSectionInfo {
+    padding: 7px 14px;
+    flex-shrink: 0;
+  }
+  .adminOverlay:has(.layoutBuilder) .adminSectionInfo p {
+    display: none;
+  }
+  .adminOverlay:has(.layoutBuilder) .adminSectionInfo strong {
+    font-size: 14px;
+  }
+  .adminOverlay:has(.layoutBuilder) .adminControls {
+    min-height: 220px;
+    flex: 1 1 220px;
+    overflow-y: auto;
+    padding: 8px 12px;
+  }
+  .adminOverlay:has(.layoutBuilder) .adminSaveBar {
+    padding: 7px 10px;
+    flex: 0 0 auto;
+  }
+  .adminOverlay:has(.layoutBuilder) .adminSaveBar button {
+    min-height: 34px;
+    padding: 6px 10px;
+  }
+}

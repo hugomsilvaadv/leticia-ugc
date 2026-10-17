@@ -6,6 +6,8 @@ import Link from "next/link";
 import MobileNavigation from "@/components/MobileNavigation";
 import type { CSSProperties } from "react";
 import type { ArticleRecord } from "@/lib/article-store";
+import type { ArticleTileLayout } from "@/lib/site-config";
+import { arrangeArticleTiles } from "@/lib/article-layout";
 import { readSiteConfig, type MediaAsset } from "@/lib/site-config";
 
 export async function Header() {
@@ -164,6 +166,30 @@ export function Card({
   );
 }
 
+export function ArticleGridSlot({
+  article, columns, height, customized, compact = false,
+}: {
+  article: ArticleRecord;
+  columns: number;
+  height: number;
+  customized: boolean;
+  compact?: boolean;
+}) {
+  return (
+    <div
+      className="layoutTile"
+      data-layout-slug={article.slug}
+      data-custom-size={customized ? "1" : "0"}
+      style={{
+        gridColumn: `span ${columns}`,
+        "--tile-height": `${height}px`,
+      } as CSSProperties}
+    >
+      <Card article={article} compact={compact} />
+    </div>
+  );
+}
+
 export function Newsletter({
   eyebrow = "Carta da Letícia",
   title = "Moda, beleza e achados para chegar sem ruído.",
@@ -199,11 +225,17 @@ export function Newsletter({
   );
 }
 
-export function Latest({ articles }: { articles: ArticleRecord[] }) {
+export function Latest({ articles, layout = [] }: { articles: ArticleRecord[]; layout?: ArticleTileLayout[] }) {
   return (
-    <div className="articleGrid">
-      {articles.slice(2).map((a) => (
-        <Card key={a.slug} article={a} />
+    <div className="articleGrid editorialTiledGrid" data-layout-section="arquivo">
+      {arrangeArticleTiles(articles.slice(2), layout).map(({ article, columns, height }) => (
+        <ArticleGridSlot
+          key={article.slug}
+          article={article}
+          columns={columns}
+          height={height}
+          customized={layout.some((tile) => tile.slug === article.slug)}
+        />
       ))}
     </div>
   );
