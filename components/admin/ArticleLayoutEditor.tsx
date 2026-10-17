@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type CSSProperties, type DragEvent, type PointerEvent } from "react";
+import { useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import type { ArticleRecord } from "@/lib/article-store";
 import type { ArticleLayout, ArticleLayoutSection, ArticleTileLayout } from "@/lib/site-config";
 import { arrangeArticleTiles, moveArticleTile } from "@/lib/article-layout";
@@ -32,6 +32,9 @@ function currentSections(articles: ArticleRecord[], featuredSlug: string) {
 export default function ArticleLayoutEditor({ layout, articles, featuredSlug, onChange }: Props) {
   const [dragging, setDragging] = useState("");
   const stage = useRef<HTMLDivElement>(null);
+  const moving = useRef<{
+    section: ArticleLayoutSection; source: string; over: string | null;
+  } | null>(null);
   const resize = useRef<{
     section: ArticleLayoutSection; slug: string; x: number; y: number;
     columns: number; height: number; width: number; lastColumns: number; lastHeight: number;
@@ -56,12 +59,30 @@ export default function ArticleLayoutEditor({ layout, articles, featuredSlug, on
     update(section, moveArticleTile(rowsFor(section), from, to));
   }
 
-  function drop(event: DragEvent<HTMLElement>, section: ArticleLayoutSection, slug: string) {
+  function startOrderDrag(event: PointerEvent<HTMLButtonElement>, section: ArticleLayoutSection, slug: string) {
+    if (event.button !== 0) return;
     event.preventDefault();
-    const value = event.dataTransfer.getData("text/plain");
-    const [fromSection, fromSlug] = value.split("|");
-    if (fromSection === section && fromSlug && fromSlug !== slug) move(section, fromSlug, slug);
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    moving.current = { section, source: slug, over: null };
+    setDragging(slug);
+  }
+
+  function moveOrderPointer(event: PointerEvent<HTMLButtonElement>) {
+    const active = moving.current;
+    if (!active) return;
+    const tile = document.elementFromPoint(event.clientX, event.clientY)
+      ?.closest<HTMLElement>("[data-layout-tile]");
+    if (tile?.closest(`[data-layout-builder="${active.section}"]`) && tile.dataset.layoutTile !== active.source) {
+      active.over = tile.dataset.layoutTile ?? null;
+    }
+  }
+
+  function finishOrderDrag() {
+    const active = moving.current;
+    moving.current = null;
     setDragging("");
+    if (active?.over) move(active.section, active.source, active.over);
   }
 
   function pointerDown(event: PointerEvent<HTMLButtonElement>, section: ArticleLayoutSection, row: ArticleTileLayout, columns: number) {
@@ -98,7 +119,7 @@ export default function ArticleLayoutEditor({ layout, articles, featuredSlug, on
       <div className="adminCard">
         <strong>Organizar os quadros com o mouse</strong>
         <p className="adminHint">
-          Arraste um cartão para trocar sua posição. Puxe o canto inferior direito ↘ para aumentar ou diminuir largura e altura. Clique em <b>Salvar alterações</b> ao terminar. A prévia ao lado acompanha a organização antes da publicação.
+          Segure “⋮⋮ Arraste” e leve o cursor até outro cartão para trocar a posição. Puxe o canto inferior direito ↘ para aumentar ou diminuir largura e altura. Clique em <b>Salvar alterações</b> ao terminar. A prévia ao lado acompanha a organização antes da publicação.
         </p>
         <p className="adminHint">
           As alterações afetam somente o tamanho e a ordem na página inicial, nunca o texto ou a foto de cada matéria. No celular, os cartões seguem em uma coluna para preservar a leitura e as fotografias.
@@ -134,25 +155,22 @@ export default function ArticleLayoutEditor({ layout, articles, featuredSlug, on
                       key={article.slug}
                       className={"layoutBuilderTile" + (dragging === article.slug ? " isDragging" : "")}
                       data-layout-tile={article.slug}
-                      draggable
-                      onDragStart={(event) => {
-                        event.dataTransfer.effectAllowed = "move";
-                        event.dataTransfer.setData("text/plain", `${section.key}|${article.slug}`);
-                        setDragging(article.slug);
-                      }}
-                      onDragEnd={() => setDragging("")}
-                      onDragOver={(event) => {
-                        event.preventDefault();
-                        event.dataTransfer.dropEffect = "move";
-                      }}
-                      onDrop={(event) => drop(event, section.key, article.slug)}
                       style={previewStyle}
                     >
                       <div className="layoutBuilderThumb">
                         {article.hero.url && /\.(png|jpe?g|webp|gif)(?:\?.*)?$/i.test(article.hero.url)
                           ? <img src={article.hero.url} alt="" loading="lazy" draggable={false} />
                           : <span aria-hidden="true">FOTO</span>}
-                        <span className="layoutBuilderDragLabel">⋮⋮ Arraste</span>
+                        <button
+                          type="button"
+                          className="layoutBuilderDragLabel"
+                          aria-label={`Arrastar ${article.title}`}
+                          title="Segure e arraste até outro quadro para trocar a ordem"
+                          onPointerDown={(event) => startOrderDrag(event, section.key, article.slug)}
+                          onPointerMove={moveOrderPointer}
+                          onPointerUp={finishOrderDrag}
+                          onPointerCancel={finishOrderDrag}
+                        >⋮⋮ Arraste</button>
                       </div>
                       <div className="layoutBuilderCardInfo">
                         <span title={article.title}>{article.title}</span>
