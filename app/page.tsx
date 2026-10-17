@@ -34,7 +34,11 @@ export default async function Home() {
     (article) => article.category === "Beleza",
   );
   const { hero, lookbook, beauty, ugc, newsletter } = config.home;
-  const coverMedia = hero.media.url ? hero.media : lead?.hero;
+  // A foto/vídeo de abertura é independente da imagem da matéria em destaque.
+  // Quando não há mídia escolhida no /admin, usamos a capa editorial padrão.
+  const coverMedia = hero.media.url
+    ? hero.media
+    : { ...hero.media, url: "/images/leticia-hero.jpg" };
   const candidateCover = coverMedia && isVideoFile(coverMedia.url)
     ? coverMedia.poster || "/images/leticia-hero.jpg"
     : coverMedia?.url || "/images/leticia-hero.jpg";
@@ -52,10 +56,10 @@ export default async function Home() {
             <Visual
               kind="hero"
               label="Letícia Leite · moda & estilo"
-              asset={hero.media.url ? hero.media : lead.hero}
+              asset={coverMedia}
               editorKey="home.hero.media"
             />
-            <div className="leadCopy">
+            <div className="leadCopy" data-featured-article={lead.slug}>
               <p
                 className="eyebrow"
                 style={textStyle(hero.eyebrowStyle)}

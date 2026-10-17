@@ -79,7 +79,7 @@ test("admin-selected MP4 activates background video; reduced-motion keeps the po
     await expect(page.getByText("Senha validada. Você pode salvar alterações.", { exact: false })).toBeVisible();
     await page.getByRole("button", { name: "Destaque da capa", exact: true }).click();
     await expect(page.getByLabel("Foto ou vídeo de abertura (MP4/WebM, até 30 MB) — enviar arquivo")).toBeVisible();
-    await expect(page.getByText("A abertura editorial usa automaticamente um MP4/WebM", { exact: false })).toBeVisible();
+    await expect(page.getByText("Fundo da página inicial — independente da matéria:", { exact: false })).toBeVisible();
   } finally {
     const latest = await request.get("/api/site-config");
     const restored = await request.put("/api/site-config", {
@@ -113,6 +113,8 @@ test("approved luxury option B places the editable brand on the cover without a 
         headerBg: getComputedStyle(header).backgroundColor,
         brandColor: getComputedStyle(brand).color,
         brandPosition: getComputedStyle(brand).position,
+        storyTop: (document.querySelector(".homeEditorial .leadCopy") as HTMLElement).getBoundingClientRect().top,
+        storyLeft: (document.querySelector(".homeEditorial .leadCopy") as HTMLElement).getBoundingClientRect().left,
       };
     });
     expect(positions.headerBg).toBe("rgba(0, 0, 0, 0)");
@@ -121,9 +123,57 @@ test("approved luxury option B places the editable brand on the cover without a 
     expect(positions.brandTop).toBeGreaterThan(positions.coverTop);
     expect(positions.brandBottom).toBeLessThan(positions.coverBottom);
     expect(Math.abs(positions.brandCenter - width / 2)).toBeLessThan(28);
+    expect(positions.brandBottom + 20).toBeLessThan(positions.storyTop);
+    expect(positions.storyLeft).toBeLessThan(width * .14);
     const menu = page.getByRole("button", { name: "Abrir menu de navegação" });
     await menu.click();
     await expect(page.getByRole("dialog", { name: "Menu de navegação" })).toBeVisible();
     await page.getByRole("button", { name: "Fechar menu" }).click();
+  }
+});
+
+test("hero background is independent of linked article photography and editorial link opens article", async ({ page, request }) => {
+  const initial = await request.get("/api/site-config");
+  const original = await initial.json();
+  const articles = await (await request.get("/api/articles", { headers: auth })).json();
+  const lead = articles.find((a: any) => a.published && a.slug === original.home.hero.featuredSlug)
+    ?? articles.find((a: any) => a.published);
+  expect(lead).toBeTruthy();
+  const withoutCover = {
+    ...original,
+    home: {
+      ...original.home,
+      hero: {
+        ...original.home.hero,
+        media: { ...original.home.hero.media, url: "" },
+      },
+    },
+  };
+  try {
+    const changed = await request.put("/api/site-config", {
+      headers: { ...auth, "if-match": initial.headers().etag },
+      data: withoutCover,
+    });
+    expect(changed.status()).toBe(200);
+    await page.goto("/");
+    const banner = page.locator('main.homeEditorial [data-editor-media="home.hero.media"] img');
+    await expect(banner).toHaveAttribute("src", "/images/leticia-hero.jpg");
+    const link = page.locator("main.homeEditorial .leadCopy h1 a");
+    await expect(link).toHaveText(original.home.hero.title);
+    await expect(link).toHaveAttribute("href", "/artigos/" + lead.slug);
+    await link.click();
+    await expect(page.locator("main.article h1")).toHaveText(lead.title);
+    if (lead.hero.url && /\.(png|jpe?g|webp|gif)(\?.*)?$/i.test(lead.hero.url)) {
+      await expect(page.locator("main.article .mediaVisual img")).toHaveAttribute("src", lead.hero.url);
+    }
+    // The administrator can independently select another campaign background,
+    // while the linked article retains its own image and text.
+  } finally {
+    const now = await request.get("/api/site-config");
+    const saved = await request.put("/api/site-config", {
+      headers: { ...auth, "if-match": now.headers().etag },
+      data: original,
+    });
+    expect(saved.status()).toBe(200);
   }
 });
