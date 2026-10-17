@@ -248,6 +248,29 @@ body:has(main.homeEditorial) > header .wordmark {
   content: none;
 }
 
+/* Override the pre-existing mobile "natural image height" policy ONLY for
+ * this cinematic cover. Other photographs keep their uncropped mobile rules. */
+@media (max-width: 800px) {
+  .homeEditorial .leadMain > .heroPhotoFrame {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    aspect-ratio: auto !important;
+    overflow: hidden !important;
+  }
+  .homeEditorial .leadMain > .heroPhotoFrame > img,
+  .homeEditorial .leadMain > .heroPhotoFrame > video {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    object-fit: cover !important;
+    transform: none !important;
+  }
+}
 @media (max-width: 800px) {
   .homeEditorial .leadMain { min-height: clamp(580px, 85svh, 850px); }
   .homeEditorial .leadCopy { padding: 32px 22px 42px; }
@@ -266,6 +289,7 @@ body:has(main.homeEditorial) > header .wordmark {
   .homeEditorial .leadCopy h1 { font-size: clamp(27px, 7.6vw, 39px) !important; }
   .homeEditorial .leadSide { grid-template-columns: minmax(0,1fr); gap: 30px; }
   .homeEditorial .leadSide .card .visual { aspect-ratio: 5/4; }
+  .homeEditorial .leadSide .card { display: block; min-width: 0; }
   .homeEditorial .sectionHead h2 { font-size: clamp(30px, 9vw, 52px); }
   .homeEditorial .articleGrid { grid-template-columns: minmax(0,1fr); gap: 28px; }
   .homeEditorial .articleGrid .visual { aspect-ratio: 4/5; }
@@ -276,4 +300,16 @@ body:has(main.homeEditorial) > header .wordmark {
 @media (prefers-reduced-motion: reduce) {
   .homeEditorial .leadCopy .textLink { transition: none; }
   .homeEditorial .cinematicVideo { display: none; }
+}
+
+@media (max-width: 360px) {
+  body:has(main.homeEditorial) > header .masthead .wordmark {
+    font-size: 22px !important;
+    letter-spacing: .035em !important;
+    white-space: nowrap;
+  }
+  .homeEditorial .leadCopy,
+  .homeEditorial .leadSide,
+  .homeEditorial .section,
+  .homeEditorial .lookbook { min-width: 0; }
 }
