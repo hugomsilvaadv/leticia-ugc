@@ -88,3 +88,47 @@ test("mobile admin retains reachable editor and real preview below it", async ({
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(391);
   await page.screenshot({ path: test.info().outputPath("admin-new-dropdown-mobile.png"), fullPage: true });
 });
+
+
+test("mobile anonymous visitor cannot confuse empty private data with deleted Linktree or UGC", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/admin");
+  const picker = page.getByRole("combobox", { name: "Selecionar seção do site" });
+  await expect(picker).toBeDisabled();
+  await expect(page.getByText("Entre para visualizar e editar esta seção")).toBeVisible();
+  await expect(page.getByText("Não foi possível carregar o Linktree.", { exact: false })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "+ Adicionar trabalho" })).toHaveCount(0);
+  await expect(page.getByText("0 trabalho(s)")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Salvar alterações" })).toBeDisabled();
+
+  await page.getByLabel("Senha do painel", { exact: true }).fill("senha-invalida");
+  await page.getByRole("button", { name: "Validar acesso", exact: true }).click();
+  await expect(picker).toBeDisabled();
+  await expect(page.getByRole("button", { name: "+ Adicionar trabalho" })).toHaveCount(0);
+
+  await unlock(page);
+  await expect(picker).toBeEnabled();
+  await picker.selectOption("linktree");
+  await expect(page.locator(".linktreeEditor")).toBeVisible();
+  await expect(page.getByText("Não foi possível carregar o Linktree.", { exact: false })).toHaveCount(0);
+  await picker.selectOption("portfolio");
+  await expect(page.getByRole("button", { name: "+ Adicionar trabalho" })).toBeVisible();
+  const count = await page.locator(".articleAdminHeader span").first().textContent();
+  expect(count).toMatch(/\\d+ trabalho\\(s\\)/);
+
+  // Changing or clearing the validated credential locks the private editor again.
+  await page.getByLabel("Senha do painel", { exact: true }).fill("");
+  await expect(picker).toBeDisabled();
+  await expect(page.getByRole("button", { name: "+ Adicionar trabalho" })).toHaveCount(0);
+  await expect(page.getByText("Entre para visualizar e editar esta seção")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Salvar alterações" })).toBeDisabled();
+});
+
+test("mobile in-app sized header remains accessible without horizontal overflow", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 650 });
+  await page.goto("/admin");
+  await expect(page.locator(".adminTop h1")).toHaveText("Blog da Letícia");
+  const top = await page.locator(".adminTop").evaluate((el) => getComputedStyle(el).position);
+  expect(top).toBe("sticky");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(391);
+});
