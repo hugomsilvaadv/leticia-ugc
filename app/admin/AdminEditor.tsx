@@ -1399,11 +1399,12 @@ export default function AdminEditor() {
                     />
                   </div>
                   <MediaControl
-                    label="Foto principal"
+                    label="Foto ou vídeo de abertura (MP4/WebM, até 30 MB)"
                     asset={h.hero.media}
                     password={password}
                     onChange={(media) => setHome("hero", { media })}
                   />
+                  <p className="adminHint">A abertura editorial usa automaticamente um MP4/WebM como vídeo silencioso em loop. Para voltar à fotografia, selecione uma imagem aqui. A opção Miniatura do vídeo define a imagem de carregamento e de acessibilidade (preferência por movimento reduzido). Textos, botão, destino da matéria e enquadramento continuam editáveis neste painel. Salve e confira a prévia.</p>
                 </>
               )}
 
