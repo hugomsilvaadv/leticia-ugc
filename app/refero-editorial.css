@@ -21,22 +21,120 @@ body:has(main.homeEditorial) {
   color: var(--refero-ink);
 }
 
+/* Option B — luxury editorial. Reuse the original /admin-editable wordmark
+ * as a transparent overlay on the existing photo/video rather than
+ * duplicating its text in the hero or changing the content model.
+ * Header has no visual white band or layout height on the homepage. */
 body:has(main.homeEditorial) > header {
-  background: var(--refero-paper);
+  position: absolute;
+  inset: 0 0 auto;
+  height: 0;
+  z-index: 30;
+  background: transparent;
+  color: #fff;
+  pointer-events: none;
 }
 
 body:has(main.homeEditorial) > header .utility {
-  color: var(--refero-charcoal);
-  border-color: var(--refero-line);
-  letter-spacing: .22em;
+  position: absolute;
+  z-index: 2;
+  top: 29px;
+  left: 50%;
+  translate: -50% 0;
+  padding: 0;
+  margin: 0;
+  width: max-content;
+  max-width: calc(100vw - 148px);
+  color: rgba(255, 255, 255, .96);
+  border: 0;
+  background: transparent;
+  font-size: 10px;
+  line-height: 1.6;
+  letter-spacing: .21em;
+  text-align: center;
+  text-wrap: balance;
+  text-shadow: 0 1px 8px rgba(22, 18, 15, .3);
 }
 
 body:has(main.homeEditorial) > header .masthead {
-  padding-block: 22px 23px;
+  position: absolute;
+  inset: 0 0 auto;
+  width: 100%;
+  max-width: none;
+  height: 0;
+  min-height: 0;
+  padding: 0 !important;
+  margin: 0;
+  border: 0;
+  background: transparent;
 }
 
-body:has(main.homeEditorial) > header .wordmark {
-  letter-spacing: .13em;
+body:has(main.homeEditorial) > header .masthead .mobileMenuToggle {
+  position: absolute;
+  top: 18px;
+  left: var(--refero-gutter);
+  transform: none;
+  color: #fff;
+  pointer-events: auto;
+}
+
+body:has(main.homeEditorial) > header .masthead .wordmark {
+  position: absolute;
+  left: 50%;
+  top: clamp(230px, 37svh, 425px);
+  translate: -50% 0;
+  width: max-content;
+  max-width: calc(100vw - 34px);
+  padding: 0;
+  margin: 0;
+  color: #fffdf8;
+  background: transparent;
+  font-weight: 400;
+  letter-spacing: .16em;
+  line-height: 1.12;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  text-shadow: 0 2px 12px rgba(22, 17, 14, .42), 0 1px 2px rgba(0, 0, 0, .2);
+  pointer-events: auto;
+}
+
+/* Barely visible localized veil to protect legibility over a bright video
+ * frame. No opaque block, backdrop-filter panel or white band. */
+body:has(main.homeEditorial) > header .masthead .wordmark::before {
+  content: "";
+  position: absolute;
+  inset: -.2em -.7em;
+  z-index: -1;
+  background: radial-gradient(ellipse, rgba(22, 17, 14, .13), transparent 76%);
+  pointer-events: none;
+}
+
+@media (max-width: 800px) {
+  body:has(main.homeEditorial) > header .utility {
+    top: 23px;
+    font-size: 9px;
+    letter-spacing: .13em;
+    max-width: calc(100vw - 120px);
+  }
+  body:has(main.homeEditorial) > header .masthead .mobileMenuToggle {
+    top: 13px;
+    left: 10px;
+    width: 42px;
+    height: 42px;
+  }
+  body:has(main.homeEditorial) > header .masthead .wordmark {
+    top: clamp(208px, 32svh, 330px);
+    font-size: clamp(23px, 6.6vw, 42px) !important;
+    letter-spacing: .075em;
+    max-width: calc(100vw - 24px);
+  }
+}
+
+@media (max-width: 360px) {
+  body:has(main.homeEditorial) > header .masthead .wordmark {
+    font-size: clamp(21px, 6.3vw, 28px) !important;
+    letter-spacing: .045em !important;
+  }
 }
 
 .homeEditorial .lead {
@@ -66,7 +164,7 @@ body:has(main.homeEditorial) > header .wordmark {
   pointer-events: none;
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(0,0,0,.12) 0%, rgba(0,0,0,.08) 38%, rgba(0,0,0,.69) 100%);
+  background: linear-gradient(180deg, rgba(18,12,9,.20) 0%, rgba(18,12,9,.06) 42%, rgba(18,12,9,.56) 100%);
 }
 
 .homeEditorial .leadMain .heroPhotoFrame {
@@ -301,11 +399,6 @@ body:has(main.homeEditorial) > header .wordmark {
 }
 
 @media (max-width: 360px) {
-  body:has(main.homeEditorial) > header .masthead .wordmark {
-    font-size: 22px !important;
-    letter-spacing: .035em !important;
-    white-space: nowrap;
-  }
   .homeEditorial .leadCopy,
   .homeEditorial .leadSide,
   .homeEditorial .section,
@@ -333,5 +426,21 @@ body:has(main.homeEditorial) > header .wordmark {
   .homeEditorial .lookbook .textLink {
     white-space: normal;
     max-width: 100%;
+  }
+}
+
+/* Prevent the center brand from colliding with article text on short screens. */
+@media (min-width: 801px) and (max-height: 760px) {
+  body:has(main.homeEditorial) > header .masthead .wordmark {
+    top: clamp(190px, 29svh, 260px);
+  }
+  .homeEditorial .leadCopy {
+    padding-top: 20px;
+    padding-bottom: 38px;
+  }
+}
+@media (max-width: 800px) and (max-height: 690px) {
+  body:has(main.homeEditorial) > header .masthead .wordmark {
+    top: 150px;
   }
 }
