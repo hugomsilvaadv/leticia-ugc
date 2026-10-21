@@ -148,7 +148,7 @@ function TextControl({
       {allowColor && (
         <label>
           Cor do texto
-          <input aria-label={label + " — cor do texto"} type="color" value={shown.color || "#ffffff"} onChange={(e) => set("color", e.target.value)} />
+          <input aria-label={"Cor do texto — " + label} type="color" value={shown.color || "#ffffff"} onChange={(e) => set("color", e.target.value)} />
         </label>
       )}
       {mobileMode && style.mobile && (
