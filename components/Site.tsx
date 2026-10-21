@@ -9,15 +9,11 @@ import type { ArticleRecord } from "@/lib/article-store";
 import type { ArticleTileLayout } from "@/lib/site-config";
 import { arrangeArticleTiles } from "@/lib/article-layout";
 import { readSiteConfig, type MediaAsset } from "@/lib/site-config";
+import { responsiveTextStyle } from "@/lib/editor-style";
 
 export async function Header() {
   const config = await readSiteConfig();
-  const style: CSSProperties = {
-    fontFamily: config.brand.wordmarkStyle.fontFamily,
-    fontSize: config.brand.wordmarkStyle.fontSize,
-    transform: `translate(${config.brand.wordmarkStyle.x}px, ${config.brand.wordmarkStyle.y}px)`,
-    textAlign: config.brand.wordmarkStyle.align,
-  };
+  const style = responsiveTextStyle(config.brand.wordmarkStyle);
 
   return (
     <header>
@@ -33,6 +29,7 @@ export async function Header() {
           href="/"
           className="wordmark"
           style={style}
+          data-mobile-text={config.brand.wordmarkStyle.mobile ? "" : undefined}
           data-editor="brand.wordmark"
         >
           {config.brand.wordmark}
@@ -99,6 +96,8 @@ export function Visual({
     return (
       <div
         data-editor-media={editorKey}
+        data-mobile-media={asset.mobile ? "1" : undefined}
+        data-mobile-crop={asset.mobile?.fit === "cover" ? "1" : undefined}
         className={
           kind === "hero" ? "heroPhotoFrame" : "visual mediaVisual " + kind
         }
