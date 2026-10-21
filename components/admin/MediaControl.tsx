@@ -10,12 +10,16 @@ export default function MediaControl({
   password,
   onChange,
   imageOnly = false,
+  responsive = false,
+  mode = "desktop",
 }: {
   label: string;
   asset: MediaAsset;
   password: string;
   onChange: (asset: MediaAsset) => void;
   imageOnly?: boolean;
+  responsive?: boolean;
+  mode?: "desktop" | "mobile";
 }) {
   const activity = useContext(UploadActivity);
   const [uploadStatus, setUploadStatus] = useState("");
@@ -26,6 +30,17 @@ export default function MediaControl({
       [key]: value,
       ...(key === "url" ? { width: undefined, height: undefined } : {}),
     });
+
+  const mobile = asset.mobile ?? {
+    positionX: asset.positionX,
+    positionY: asset.positionY,
+    fit: "contain" as const,
+    zoom: 100,
+    opacity: asset.opacity,
+  };
+  const setMobile = <K extends keyof NonNullable<MediaAsset["mobile"]>>(
+    key: K, value: NonNullable<MediaAsset["mobile"]>[K],
+  ) => onChange({ ...asset, mobile: { ...mobile, [key]: value } });
 
   async function upload(file?: File) {
     if (!file) return;
@@ -165,10 +180,55 @@ export default function MediaControl({
           placeholder="URL da fotografia existente"
         />
       </label>
-      <p className="adminHint">
-        No celular, a fotografia inteira é preservada. Ponto focal e zoom são
-        aplicados no desktop, sem editar o arquivo.
-      </p>
+      {responsive && (
+        <div className="adminCard">
+          <strong>Enquadramento exclusivo do celular</strong>
+          <p className="adminHint">
+            Você está vendo a prévia {mode === "mobile" ? "CELULAR" : "DESKTOP"}.
+            Defina o enquadramento vertical separadamente. A configuração antiga
+            permanece igual até você alterar estes controles.
+          </p>
+          <div className="adminRangeRow">
+            <label>
+              Horizontal no celular <b>{mobile.positionX}%</b>
+              <input type="range" aria-label="Horizontal no celular" min="0" max="100" value={mobile.positionX}
+                onChange={(e) => setMobile("positionX", Number(e.target.value))} />
+            </label>
+            <label>
+              Vertical no celular <b>{mobile.positionY}%</b>
+              <input type="range" aria-label="Vertical no celular" min="0" max="100" value={mobile.positionY}
+                onChange={(e) => setMobile("positionY", Number(e.target.value))} />
+            </label>
+          </div>
+          <label>
+            Zoom no celular <b>{mobile.zoom ?? 100}%</b>
+            <input type="range" aria-label="Zoom no celular" min="70" max="220" value={mobile.zoom ?? 100}
+              onChange={(e) => setMobile("zoom", Number(e.target.value))} />
+          </label>
+          <label>
+            Opacidade no celular <b>{mobile.opacity ?? asset.opacity}%</b>
+            <input type="range" aria-label="Opacidade no celular" min="0" max="100"
+              value={mobile.opacity ?? asset.opacity}
+              onChange={(e) => setMobile("opacity", Number(e.target.value))} />
+          </label>
+          <label>
+            Enquadramento no celular
+            <select aria-label="Enquadramento no celular" value={mobile.fit}
+              onChange={(e) => setMobile("fit", e.target.value as MediaAsset["fit"])}>
+              <option value="contain">Exibir fotografia inteira</option>
+              <option value="cover">Preencher a capa (recortar)</option>
+            </select>
+          </label>
+          {asset.mobile && (
+            <button type="button" onClick={() => onChange({ ...asset, mobile: undefined })}>
+              Restaurar enquadramento automático do celular
+            </button>
+          )}
+        </div>
+      )}
+      {!responsive && <p className="adminHint">
+        No celular, a fotografia inteira é preservada. O zoom é aplicado no desktop.
+      </p>}
     </div>
   );
 }

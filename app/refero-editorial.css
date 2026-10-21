@@ -538,3 +538,54 @@ body:has(main.homeEditorial) > header .masthead .wordmark {
     padding-top: 240px;
   }
 }
+
+
+/* CMS hero controls: per-device edits override the legacy mobile defaults only
+   when a mobile value was explicitly saved. No changes to existing photographs
+   or typography for sites that have not used the responsive editor. */
+.homeEditorial .leadMain::after {
+  opacity: var(--hero-overlay-opacity, 1);
+}
+.homeEditorial .leadCopy .textLink[data-editor] {
+  border-color: currentColor;
+}
+@media (max-width: 800px) {
+  body:has(main.homeEditorial) > header .masthead .wordmark[data-mobile-text],
+  .homeEditorial .leadCopy [data-editor][data-mobile-text] {
+    font-size: var(--editor-mobile-font-size) !important;
+    font-family: var(--editor-mobile-font-family, inherit) !important;
+    transform: translate(var(--editor-mobile-x, 0px), var(--editor-mobile-y, 0px)) !important;
+    text-align: var(--editor-mobile-align, left) !important;
+    color: var(--editor-mobile-color, #ffffff) !important;
+  }
+  .homeEditorial .leadMain > .heroPhotoFrame[data-mobile-crop="1"] {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    aspect-ratio: auto !important;
+    overflow: hidden !important;
+  }
+  .homeEditorial .leadMain > .heroPhotoFrame[data-mobile-crop="1"] > img.sharedMedia {
+    position: absolute !important;
+    inset: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    object-fit: cover !important;
+  }
+  .homeEditorial .leadMain > .heroPhotoFrame[data-mobile-media="1"] img.sharedMedia,
+  .homeEditorial .leadMain > .heroPhotoFrame[data-mobile-media="1"] .cinematicStill,
+  .homeEditorial .leadMain > .heroPhotoFrame[data-mobile-media="1"] .cinematicVideo {
+    object-position: var(--mobile-x, 50%) var(--mobile-y, 50%) !important;
+    transform: scale(var(--mobile-zoom, 1)) !important;
+    transform-origin: var(--mobile-x, 50%) var(--mobile-y, 50%) !important;
+    opacity: var(--mobile-opacity, 1) !important;
+  }
+  .homeEditorial .leadMain > .heroPhotoFrame[data-mobile-media="1"] .cinematicStill,
+  .homeEditorial .leadMain > .heroPhotoFrame[data-mobile-media="1"] .cinematicVideo {
+    object-fit: var(--mobile-fit, cover) !important;
+  }
+}

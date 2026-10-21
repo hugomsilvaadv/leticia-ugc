@@ -21,6 +21,8 @@ export function mediaStyle(asset: MediaAsset): CSSProperties {
     "--mobile-x": `${asset.mobile?.positionX ?? asset.positionX}%`,
     "--mobile-y": `${asset.mobile?.positionY ?? asset.positionY}%`,
     "--mobile-fit": asset.mobile?.fit ?? "contain",
+    "--mobile-zoom": (asset.mobile?.zoom ?? 100) / 100,
+    "--mobile-opacity": (asset.mobile?.opacity ?? asset.opacity) / 100,
   } as CSSProperties;
 }
 export default function SharedMedia({

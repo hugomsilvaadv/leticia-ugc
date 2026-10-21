@@ -3,6 +3,7 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import type { MediaAsset } from "@/lib/site-config";
 import { safeMediaUrl } from "@/lib/media";
+import { mediaStyle as assetMediaStyle } from "@/components/Media";
 
 // The original hero image is retained until a video/poster is uploaded in /admin.
 // No autoplay or video transfer is initiated for reduced-motion/data-saver visitors.
@@ -24,6 +25,7 @@ export default function CinematicHeroMedia({ asset }: { asset: MediaAsset }) {
     ? asset.poster
     : "/images/leticia-hero.jpg";
   const mediaStyle: CSSProperties = {
+    ...assetMediaStyle(asset),
     objectFit: asset.fit,
     objectPosition: `${asset.positionX}% ${asset.positionY}%`,
     transform: `scale(${asset.zoom / 100})`,
