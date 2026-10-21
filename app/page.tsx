@@ -1,21 +1,14 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
+import { responsiveTextStyle } from "@/lib/editor-style";
 import { ArticleGridSlot, Card, Latest, Newsletter, Visual } from "@/components/Site";
 import { arrangeArticleTiles } from "@/lib/article-layout";
 import { readArticles } from "@/lib/article-store";
-import { readSiteConfig, type TextStyle } from "@/lib/site-config";
+import { readSiteConfig } from "@/lib/site-config";
 import { isVideoFile, safeMediaUrl } from "@/lib/media";
 
 export const dynamic = "force-dynamic";
 
-function textStyle(style: TextStyle): CSSProperties {
-  return {
-    fontFamily: style.fontFamily,
-    fontSize: style.fontSize,
-    transform: `translate(${style.x}px, ${style.y}px)`,
-    textAlign: style.align,
-  };
-}
 
 export default async function Home() {
   const allArticles = (await readArticles()).filter(
@@ -47,6 +40,7 @@ export default async function Home() {
   const coverStyle = {
     "--editorial-photo-bleed": `url(${JSON.stringify(coverUrl)})`,
     "--editorial-photo-focus": `${coverMedia?.positionX ?? 50}% ${coverMedia?.positionY ?? 50}%`,
+    "--hero-overlay-opacity": hero.overlayOpacity / 100,
   } as CSSProperties;
 
   return (
@@ -63,23 +57,29 @@ export default async function Home() {
             <div className="leadCopy" data-featured-article={lead.slug}>
               <p
                 className="eyebrow"
-                style={textStyle(hero.eyebrowStyle)}
+                style={responsiveTextStyle(hero.eyebrowStyle)}
+                data-mobile-text={hero.eyebrowStyle.mobile ? "" : undefined}
                 data-editor="home.hero.eyebrow"
               >
                 {hero.eyebrow}
               </p>
               <h1
-                style={textStyle(hero.titleStyle)}
+                style={responsiveTextStyle(hero.titleStyle)}
+                data-mobile-text={hero.titleStyle.mobile ? "" : undefined}
                 data-editor="home.hero.title"
               >
                 <Link href={"/artigos/" + lead.slug}>{hero.title}</Link>
               </h1>
-              <p style={textStyle(hero.dekStyle)} data-editor="home.hero.dek">
+              <p style={responsiveTextStyle(hero.dekStyle)}
+                data-mobile-text={hero.dekStyle.mobile ? "" : undefined}
+                data-editor="home.hero.dek">
                 {hero.dek}
               </p>
               <Link
                 className="textLink"
                 href={"/artigos/" + lead.slug}
+                style={responsiveTextStyle(hero.buttonStyle)}
+                data-mobile-text={hero.buttonStyle.mobile ? "" : undefined}
                 data-editor="home.hero.buttonText"
               >
                 {hero.buttonText}
@@ -136,19 +136,19 @@ export default async function Home() {
         <div>
           <p
             className="eyebrow"
-            style={textStyle(lookbook.eyebrowStyle)}
+            style={responsiveTextStyle(lookbook.eyebrowStyle)}
             data-editor="home.lookbook.eyebrow"
           >
             {lookbook.eyebrow}
           </p>
           <h2
-            style={textStyle(lookbook.titleStyle)}
+            style={responsiveTextStyle(lookbook.titleStyle)}
             data-editor="home.lookbook.title"
           >
             {lookbook.title}
           </h2>
           <p
-            style={textStyle(lookbook.bodyStyle)}
+            style={responsiveTextStyle(lookbook.bodyStyle)}
             data-editor="home.lookbook.body"
           >
             {lookbook.body}
@@ -174,13 +174,13 @@ export default async function Home() {
           <div>
             <p
               className="eyebrow"
-              style={textStyle(beauty.eyebrowStyle)}
+              style={responsiveTextStyle(beauty.eyebrowStyle)}
               data-editor="home.beauty.eyebrow"
             >
               {beauty.eyebrow}
             </p>
             <h2
-              style={textStyle(beauty.titleStyle)}
+              style={responsiveTextStyle(beauty.titleStyle)}
               data-editor="home.beauty.title"
             >
               {beauty.title}
@@ -200,7 +200,7 @@ export default async function Home() {
           <div>
             <p
               className="intro"
-              style={textStyle(beauty.introStyle)}
+              style={responsiveTextStyle(beauty.introStyle)}
               data-editor="home.beauty.intro"
             >
               {beauty.intro}
@@ -215,15 +215,15 @@ export default async function Home() {
           <div>
             <p
               className="eyebrow"
-              style={textStyle(ugc.eyebrowStyle)}
+              style={responsiveTextStyle(ugc.eyebrowStyle)}
               data-editor="home.ugc.eyebrow"
             >
               {ugc.eyebrow}
             </p>
-            <h2 style={textStyle(ugc.titleStyle)} data-editor="home.ugc.title">
+            <h2 style={responsiveTextStyle(ugc.titleStyle)} data-editor="home.ugc.title">
               {ugc.title}
             </h2>
-            <p style={textStyle(ugc.bodyStyle)} data-editor="home.ugc.body">
+            <p style={responsiveTextStyle(ugc.bodyStyle)} data-editor="home.ugc.body">
               {ugc.body}
             </p>
             <div className="actions">
@@ -271,8 +271,8 @@ export default async function Home() {
       <Newsletter
         eyebrow={newsletter.eyebrow}
         title={newsletter.title}
-        eyebrowStyle={textStyle(newsletter.eyebrowStyle)}
-        titleStyle={textStyle(newsletter.titleStyle)}
+        eyebrowStyle={responsiveTextStyle(newsletter.eyebrowStyle)}
+        titleStyle={responsiveTextStyle(newsletter.titleStyle)}
         editorPrefix="home.newsletter"
       />
     </main>
