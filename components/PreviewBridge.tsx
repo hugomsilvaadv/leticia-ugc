@@ -67,9 +67,10 @@ function applyMedia(key: string, asset: MediaAsset) {
       holder.style.setProperty("--mobile-zoom", String((asset.mobile?.zoom ?? 100) / 100));
       holder.style.setProperty("--mobile-opacity", String((asset.mobile?.opacity ?? asset.opacity) / 100));
 
-      if (!asset.url) return;
-      const isVideo = /\.(mp4|webm)(\?|$)/i.test(asset.url);
       const isHero = key === "home.hero.media";
+      const src = asset.url || (isHero ? "/images/leticia-hero.jpg" : "");
+      if (!src) return;
+      const isVideo = /\.(mp4|webm)(\?|$)/i.test(src);
 
       const updateElement = (media: HTMLImageElement | HTMLVideoElement, src: string) => {
         if (media.src !== new URL(src, window.location.href).href) media.src = src;
@@ -124,6 +125,20 @@ function applyMedia(key: string, asset: MediaAsset) {
         return;
       }
 
+      if (isVideo) {
+        let video = holder.querySelector("video.sharedMedia") as HTMLVideoElement | null;
+        if (!video) {
+          video = document.createElement("video");
+          video.className = "sharedMedia";
+          holder.replaceChildren(video);
+        }
+        video.controls = true;
+        video.playsInline = true;
+        video.poster = asset.poster || "";
+        updateElement(video, src);
+        return;
+      }
+
       let media = holder.querySelector("img.sharedMedia") as HTMLImageElement | null;
       if (!media || holder.querySelector(".cinematicMedia")) {
         media = document.createElement("img");
@@ -132,7 +147,7 @@ function applyMedia(key: string, asset: MediaAsset) {
       }
       // Responsive image srcset is tied to the previous URL; remove it in the preview.
       media.removeAttribute("srcset");
-      updateElement(media, asset.url);
+      updateElement(media, src);
     });
 }
 
