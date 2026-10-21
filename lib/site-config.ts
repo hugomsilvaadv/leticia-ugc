@@ -14,6 +14,8 @@ export type TextStyle = {
   x: number;
   y: number;
   align: TextAlign;
+  color?: string;
+  mobile?: { fontSize: number; x: number; y: number; align: TextAlign; color?: string };
 };
 
 export type MediaAsset = {
@@ -23,7 +25,7 @@ export type MediaAsset = {
   zoom: number;
   opacity: number;
   fit: FitMode;
-  mobile?: { positionX: number; positionY: number; fit: FitMode };
+  mobile?: { positionX: number; positionY: number; fit: FitMode; zoom?: number; opacity?: number };
   poster?: string;
   width?: number;
   height?: number;
@@ -48,6 +50,8 @@ export type SiteConfig = {
       title: string;
       dek: string;
       buttonText: string;
+      buttonStyle: TextStyle;
+      overlayOpacity: number;
       media: MediaAsset;
       eyebrowStyle: TextStyle;
       titleStyle: TextStyle;
@@ -141,6 +145,8 @@ export const DEFAULT_CONFIG: SiteConfig = {
       title: "Camadas sem excesso: um guia visual para a meia-estação",
       dek: "Proporção, textura e fórmulas simples para montar looks que parecem pensados sem perder conforto.",
       buttonText: "Ler matéria",
+      buttonStyle: text("Arial", 11),
+      overlayOpacity: 100,
       media: media("/images/leticia-hero.jpg"),
       eyebrowStyle: text("Arial", 11),
       titleStyle: text("Georgia", 58),
@@ -222,7 +228,17 @@ function normalizeStyle(
   value: Partial<TextStyle> | undefined,
   fallback: TextStyle,
 ): TextStyle {
+  const color = (raw: unknown) => typeof raw === "string" && /^#[a-fA-F0-9]{6}$/.test(raw) ? raw : undefined;
+  const mobile = value?.mobile;
   return {
+    ...(color(value?.color) ? { color: color(value?.color) } : {}),
+    ...(mobile ? { mobile: {
+      fontSize: num(mobile.fontSize, Math.min(40, fallback.fontSize), 9, 120),
+      x: num(mobile.x, 0, -120, 120),
+      y: num(mobile.y, 0, -120, 120),
+      align: mobile.align === "center" || mobile.align === "right" ? mobile.align : "left",
+      ...(color(mobile.color) ? { color: color(mobile.color) } : {}),
+    } } : {}),
     fontFamily:
       typeof value?.fontFamily === "string" && value.fontFamily
         ? value.fontFamily
@@ -250,6 +266,15 @@ function normalizeMedia(
     zoom: num(value?.zoom, fallback.zoom, 70, 220),
     opacity: num(value?.opacity, fallback.opacity, 0, 100),
     fit: value?.fit === "contain" ? "contain" : "cover",
+    ...(value?.mobile ? {
+      mobile: {
+        positionX: num(value.mobile.positionX, value.positionX ?? fallback.positionX, 0, 100),
+        positionY: num(value.mobile.positionY, value.positionY ?? fallback.positionY, 0, 100),
+        fit: value.mobile.fit === "cover" ? "cover" as const : "contain" as const,
+        zoom: num(value.mobile.zoom, 100, 70, 220),
+        opacity: num(value.mobile.opacity, value.opacity ?? fallback.opacity, 0, 100),
+      },
+    } : {}),
   };
 }
 
@@ -308,6 +333,8 @@ export function normalizeConfig(
         title: str(hero?.title, DEFAULT_CONFIG.home.hero.title),
         dek: str(hero?.dek, DEFAULT_CONFIG.home.hero.dek),
         buttonText: str(hero?.buttonText, DEFAULT_CONFIG.home.hero.buttonText),
+        buttonStyle: normalizeStyle(hero?.buttonStyle, DEFAULT_CONFIG.home.hero.buttonStyle),
+        overlayOpacity: num(hero?.overlayOpacity, DEFAULT_CONFIG.home.hero.overlayOpacity, 0, 100),
         media: normalizeMedia(hero?.media, DEFAULT_CONFIG.home.hero.media),
         eyebrowStyle: normalizeStyle(
           hero?.eyebrowStyle,
