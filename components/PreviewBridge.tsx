@@ -22,6 +22,7 @@ function applyStyle(element: HTMLElement, style?: TextStyle) {
   if (style.mobile) {
     element.setAttribute("data-mobile-text", "");
     element.style.setProperty("--editor-mobile-font-size", `${style.mobile.fontSize}px`);
+    element.style.setProperty("--editor-mobile-font-family", style.mobile.fontFamily || style.fontFamily);
     element.style.setProperty("--editor-mobile-x", `${style.mobile.x}px`);
     element.style.setProperty("--editor-mobile-y", `${style.mobile.y}px`);
     element.style.setProperty("--editor-mobile-align", style.mobile.align);
@@ -29,7 +30,7 @@ function applyStyle(element: HTMLElement, style?: TextStyle) {
   } else {
     element.removeAttribute("data-mobile-text");
     for (const name of [
-      "--editor-mobile-font-size", "--editor-mobile-x", "--editor-mobile-y",
+      "--editor-mobile-font-size", "--editor-mobile-font-family", "--editor-mobile-x", "--editor-mobile-y",
       "--editor-mobile-align", "--editor-mobile-color",
     ]) element.style.removeProperty(name);
   }
