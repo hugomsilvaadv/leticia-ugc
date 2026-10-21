@@ -209,7 +209,9 @@ test("responsive hero editor previews independent mobile copy, cropping and grad
   await expect(page.getByText("Há alterações não salvas.", { exact: false })).toBeVisible();
 });
 
-test("mobile hero media crop does not overwrite desktop zoom", async ({ page }) => {
+test("mobile hero media crop does not overwrite desktop zoom", async ({ page, request }) => {
+  const initial = await (await request.get("/api/site-config")).json();
+  try {
   await page.setViewportSize({ width: 1366, height: 768 });
   await page.goto("/admin");
   await page.getByLabel("Senha do painel", { exact: true }).fill(password);
@@ -221,4 +223,12 @@ test("mobile hero media crop does not overwrite desktop zoom", async ({ page }) 
   await expect.poll(async () => editor.getAttribute("data-mobile-crop")).toBe("1");
   await page.getByRole("button", { name: "Salvar alterações" }).click();
   await expect(page.getByText("Alterações salvas.", { exact: false })).toBeVisible();
+  } finally {
+    const latest = await request.get("/api/site-config");
+    const restored = await request.put("/api/site-config", {
+      headers: { ...auth, "if-match": latest.headers().etag },
+      data: initial,
+    });
+    expect(restored.status()).toBe(200);
+  }
 });
