@@ -177,3 +177,48 @@ test("hero background is independent of linked article photography and editorial
     expect(saved.status()).toBe(200);
   }
 });
+
+
+test("responsive hero editor previews independent mobile copy, cropping and gradient", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto("/admin");
+  await page.getByLabel("Senha do painel", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Validar acesso", exact: true }).click();
+  await expect(page.getByText("Senha validada. Você pode salvar alterações.", { exact: false })).toBeVisible();
+  await page.getByRole("combobox", { name: "Selecionar seção do site" }).selectOption("hero");
+  await page.getByRole("button", { name: "Celular", exact: true }).click();
+
+  await page.getByLabel("Título principal — cor do texto").fill("#ffcc00");
+  const mobileTitle = page.frameLocator("iframe.adminPreviewFrame").locator('[data-editor="home.hero.title"]');
+  await expect.poll(async () => mobileTitle.evaluate(el => getComputedStyle(el).color)).toBe("rgb(255, 204, 0)");
+
+  await page.getByLabel("Enquadramento no celular").selectOption("cover");
+  await expect.poll(async () => page.frameLocator("iframe.adminPreviewFrame")
+    .locator('[data-editor-media="home.hero.media"]').getAttribute("data-mobile-crop")).toBe("1");
+  const mobileCover = page.frameLocator("iframe.adminPreviewFrame").locator('.heroPhotoFrame > img.sharedMedia');
+  await expect.poll(async () => mobileCover.evaluate(el => getComputedStyle(el).objectFit)).toBe("cover");
+
+  await page.getByLabel("Intensidade do degradê").fill("60");
+  await expect.poll(async () => page.frameLocator("iframe.adminPreviewFrame").locator(".leadMain")
+    .evaluate(el => getComputedStyle(el, "::after").opacity)).toBe("0.6");
+
+  await page.getByRole("button", { name: "Desktop", exact: true }).click();
+  const desktopTitle = page.frameLocator("iframe.adminPreviewFrame").locator('[data-editor="home.hero.title"]');
+  await expect.poll(async () => desktopTitle.evaluate(el => getComputedStyle(el).color))
+    .not.toBe("rgb(255, 204, 0)");
+  await expect(page.getByText("Há alterações não salvas.", { exact: false })).toBeVisible();
+});
+
+test("mobile hero media crop does not overwrite desktop zoom", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto("/admin");
+  await page.getByLabel("Senha do painel", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Validar acesso", exact: true }).click();
+  await expect(page.getByText("Senha validada. Você pode salvar alterações.", { exact: false })).toBeVisible();
+  await page.getByRole("combobox", { name: "Selecionar seção do site" }).selectOption("hero");
+  await page.getByLabel("Enquadramento no celular").selectOption("cover");
+  const editor = page.frameLocator("iframe.adminPreviewFrame").locator('[data-editor-media="home.hero.media"]');
+  await expect.poll(async () => editor.getAttribute("data-mobile-crop")).toBe("1");
+  await page.getByRole("button", { name: "Salvar alterações" }).click();
+  await expect(page.getByText("Alterações salvas.", { exact: false })).toBeVisible();
+});
