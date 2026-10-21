@@ -15,7 +15,7 @@ export type TextStyle = {
   y: number;
   align: TextAlign;
   color?: string;
-  mobile?: { fontSize: number; x: number; y: number; align: TextAlign; color?: string };
+  mobile?: { fontSize: number; x: number; y: number; align: TextAlign; color?: string; fontFamily?: string };
 };
 
 export type MediaAsset = {
@@ -233,6 +233,7 @@ function normalizeStyle(
   return {
     ...(color(value?.color) ? { color: color(value?.color) } : {}),
     ...(mobile ? { mobile: {
+      fontFamily: typeof mobile.fontFamily === "string" && mobile.fontFamily ? mobile.fontFamily : (value?.fontFamily || fallback.fontFamily),
       fontSize: num(mobile.fontSize, Math.min(40, fallback.fontSize), 9, 120),
       x: num(mobile.x, 0, -120, 120),
       y: num(mobile.y, 0, -120, 120),
