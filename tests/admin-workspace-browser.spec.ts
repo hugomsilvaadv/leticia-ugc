@@ -132,3 +132,71 @@ test("mobile in-app sized header remains accessible without horizontal overflow"
   expect(top).toBe("sticky");
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(391);
 });
+
+
+test("admin retries a stale save once when server content is unchanged", async ({ page }) => {
+  await page.goto("/admin");
+  await unlock(page);
+  await page.getByRole("combobox", { name: "Selecionar seção do site" }).selectOption("hero");
+  const input = page.getByRole("textbox", { name: "Título principal" });
+  const originalTitle = await input.inputValue();
+  const newTitle = originalTitle + " — teste de conflito";
+  await input.fill(newTitle);
+
+  let writes = 0;
+  await page.route("**/api/site-config", async (route) => {
+    if (route.request().method() !== "PUT") return route.continue();
+    writes++;
+    if (writes === 1)
+      return route.fulfill({
+        status: 409,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "Conflito de versão" }),
+      });
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers: { "x-content-revision": '"version-after-save"' },
+      body: route.request().postData() || "{}",
+    });
+  });
+
+  await page.getByRole("button", { name: "Salvar alterações" }).click();
+  await expect(page.getByText("Alterações salvas. Páginas e aparência.", { exact: false })).toBeVisible();
+  expect(writes).toBe(2);
+  await expect(input).toHaveValue(newTitle);
+});
+
+test("admin retains unsaved changes if another editor changed the same field", async ({ page, request }) => {
+  await page.goto("/admin");
+  await unlock(page);
+  await page.getByRole("combobox", { name: "Selecionar seção do site" }).selectOption("hero");
+  const input = page.getByRole("textbox", { name: "Título principal" });
+  const originalTitle = await input.inputValue();
+  await input.fill(originalTitle + " — edição local");
+
+  const newest = await (await request.get("/api/site-config")).json();
+  newest.home.hero.title = originalTitle + " — edição concorrente";
+  let writes = 0;
+  await page.route("**/api/site-config", async (route) => {
+    if (route.request().method() === "PUT") {
+      writes++;
+      return route.fulfill({
+        status: 409,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "Conflito de versão" }),
+      });
+    }
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers: { "x-content-revision": '"new-version"' },
+      body: JSON.stringify(newest),
+    });
+  });
+
+  await page.getByRole("button", { name: "Salvar alterações" }).click();
+  await expect(page.getByText("Outra sessão alterou os mesmos campos.", { exact: false })).toBeVisible();
+  expect(writes).toBe(1);
+  await expect(input).toHaveValue(originalTitle + " — edição local");
+});

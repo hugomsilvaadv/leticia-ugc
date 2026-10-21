@@ -13,6 +13,11 @@ import type { MediaAsset, SiteConfig, TextStyle } from "@/lib/site-config";
 import type { ArticleRecord } from "@/lib/article-store";
 import type { PortfolioItem } from "@/lib/portfolio-store";
 import { getNumberedSections } from "@/lib/article-body";
+import { EDIT_CONFLICT, rebaseEdits } from "@/lib/rebase-edits";
+
+// CDN/compression can rewrite ETag as a weak validator; use our own revision first.
+const responseRevision = (response: Response) =>
+  response.headers.get("x-content-revision") || response.headers.get("etag") || "";
 
 const resourceLabels: Record<string, string> = {
   "site-config": "Páginas e aparência",
@@ -172,7 +177,7 @@ export default function AdminEditor() {
         if (epoch !== loadEpoch.current) return;
         baseline.current[key] = {
           json: JSON.stringify(data),
-          etag: response.headers.get("etag") || "",
+          etag: responseRevision(response),
           full: !!adminPassword,
         };
         set(data);
@@ -496,23 +501,61 @@ export default function AdminEditor() {
       )) {
         setStatus(`Salvando ${resourceLabels[key]}…`);
         try {
-          const response = await fetch(`/api/${key}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              "x-admin-password": password,
-              "If-Match": baseline.current[key].etag,
-            },
-            body: JSON.stringify(currentValues[key]),
-          });
-          const data = await response.json();
-          if (!response.ok) throw new Error(data.error || "Falha ao salvar.");
+          const original = baseline.current[key];
+          if (!original.etag)
+            throw new Error("Versão do conteúdo não identificada. Recarregue antes de salvar.");
+
+          const put = async (value: unknown, revision: string) => {
+            const response = await fetch(`/api/${key}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                "x-admin-password": password,
+                "If-Match": revision,
+              },
+              body: JSON.stringify(value),
+            });
+            const data = await response.json();
+            return { response, data };
+          };
+
+          let result = await put(currentValues[key], original.etag);
+          if (result.response.status === 409) {
+            // Preserve the unsaved edits. Re-fetch the server state and retry
+            // once only if those edits do not overwrite intervening changes.
+            const freshResponse = await fetch(`/api/${key}`, {
+              cache: "no-store",
+              headers: { "x-admin-password": password },
+            });
+            const fresh = await freshResponse.json();
+            if (!freshResponse.ok)
+              throw new Error(fresh.error || "Falha ao atualizar a versão do conteúdo.");
+
+            const revision = responseRevision(freshResponse);
+            if (!revision)
+              throw new Error("O servidor não informou a versão atual. Suas alterações continuam pendentes.");
+
+            const rebased = rebaseEdits(
+              JSON.parse(original.json),
+              currentValues[key],
+              fresh,
+            );
+            if (rebased === EDIT_CONFLICT)
+              throw new Error(
+                "Outra sessão alterou os mesmos campos. Suas alterações foram preservadas; confira a versão atual antes de salvar.",
+              );
+
+            result = await put(rebased, revision);
+          }
+
+          if (!result.response.ok)
+            throw new Error(result.data.error || "Falha ao salvar.");
           baseline.current[key] = {
-            json: JSON.stringify(data),
-            etag: response.headers.get("etag") || "",
+            json: JSON.stringify(result.data),
+            etag: responseRevision(result.response),
             full: true,
           };
-          setters[key](data);
+          setters[key](result.data);
           saved.push(resourceLabels[key]);
         } catch (error) {
           failed.push(
