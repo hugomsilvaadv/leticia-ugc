@@ -62,11 +62,11 @@ function TextControl({
 }) {
   const mobileMode = enableMobile && mode === "mobile";
   const mobile = style.mobile ?? {
-    fontSize: mobileFontFallback, x: 0, y: 0, align: style.align, color: style.color,
+    fontSize: mobileFontFallback, x: 0, y: 0, align: style.align, color: style.color, fontFamily: style.fontFamily,
   };
   const shown = mobileMode ? { ...style, ...mobile } : style;
   const set = <K extends keyof TextStyle>(key: K, value: TextStyle[K]) => {
-    if (mobileMode && key !== "fontFamily" && key !== "mobile") {
+    if (mobileMode && key !== "mobile") {
       onStyle({ ...style, mobile: { ...mobile, [key]: value } });
     } else {
       onStyle({ ...style, [key]: value });
@@ -94,7 +94,7 @@ function TextControl({
       <label>
         Fonte
         <select
-          value={style.fontFamily}
+          value={shown.fontFamily}
           onChange={(e) => set("fontFamily", e.target.value)}
         >
           {fonts.map((font) => (
