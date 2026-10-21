@@ -188,7 +188,7 @@ test("responsive hero editor previews independent mobile copy, cropping and grad
   await page.getByRole("combobox", { name: "Selecionar seção do site" }).selectOption("hero");
   await page.getByRole("button", { name: "Celular", exact: true }).click();
 
-  await page.getByLabel("Título principal — cor do texto").fill("#ffcc00");
+  await page.getByLabel("Cor do texto — Título principal").fill("#ffcc00");
   const mobileTitle = page.frameLocator("iframe.adminPreviewFrame").locator('[data-editor="home.hero.title"]');
   await expect.poll(async () => mobileTitle.evaluate(el => getComputedStyle(el).color)).toBe("rgb(255, 204, 0)");
 
