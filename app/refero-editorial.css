@@ -557,6 +557,15 @@ body:has(main.homeEditorial) > header .masthead .wordmark {
     text-align: var(--editor-mobile-align, left) !important;
     color: var(--editor-mobile-color, #ffffff) !important;
   }
+  .homeEditorial .leadMain > .heroPhotoFrame[data-mobile-crop="1"] {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    aspect-ratio: auto !important;
+    overflow: hidden !important;
+  }
   .homeEditorial .leadMain > .heroPhotoFrame[data-mobile-crop="1"] > img.sharedMedia {
     position: absolute !important;
     inset: 0 !important;
