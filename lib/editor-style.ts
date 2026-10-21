@@ -12,6 +12,7 @@ export function responsiveTextStyle(style: TextStyle): CSSProperties {
     ...(style.color ? { color: style.color } : {}),
     ...(style.mobile ? {
       "--editor-mobile-font-size": `${style.mobile.fontSize}px`,
+      "--editor-mobile-font-family": style.mobile.fontFamily || style.fontFamily,
       "--editor-mobile-x": `${style.mobile.x}px`,
       "--editor-mobile-y": `${style.mobile.y}px`,
       "--editor-mobile-align": style.mobile.align,
