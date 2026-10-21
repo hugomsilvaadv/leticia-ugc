@@ -42,6 +42,10 @@ function TextControl({
   onValue,
   onStyle,
   multiline = false,
+  mode = "desktop",
+  enableMobile = false,
+  mobileFontFallback = 30,
+  allowColor = false,
 }: {
   label: string;
   value: string;
@@ -49,9 +53,23 @@ function TextControl({
   onValue: (value: string) => void;
   onStyle: (style: TextStyle) => void;
   multiline?: boolean;
+  mode?: "desktop" | "mobile";
+  enableMobile?: boolean;
+  mobileFontFallback?: number;
+  allowColor?: boolean;
 }) {
-  const set = <K extends keyof TextStyle>(key: K, value: TextStyle[K]) =>
-    onStyle({ ...style, [key]: value });
+  const mobileMode = enableMobile && mode === "mobile";
+  const mobile = style.mobile ?? {
+    fontSize: mobileFontFallback, x: 0, y: 0, align: style.align, color: style.color,
+  };
+  const shown = mobileMode ? { ...style, ...mobile } : style;
+  const set = <K extends keyof TextStyle>(key: K, value: TextStyle[K]) => {
+    if (mobileMode && key !== "fontFamily" && key !== "mobile") {
+      onStyle({ ...style, mobile: { ...mobile, [key]: value } });
+    } else {
+      onStyle({ ...style, [key]: value });
+    }
+  };
 
   return (
     <div className="adminCard">
@@ -70,6 +88,7 @@ function TextControl({
           onChange={(e) => onValue(e.target.value)}
         />
       )}
+      {enableMobile && <p className="adminHint">Ajustando {mobileMode ? "CELULAR" : "DESKTOP"} · tamanho, posição e alinhamento independentes.</p>}
       <label>
         Fonte
         <select
@@ -84,33 +103,33 @@ function TextControl({
         </select>
       </label>
       <label>
-        Tamanho no desktop <b>{style.fontSize}px</b>
+        Tamanho no {mobileMode ? "celular" : "desktop"} <b>{shown.fontSize}px</b>
         <input
           type="range"
           min="9"
           max="120"
-          value={style.fontSize}
+          value={shown.fontSize}
           onChange={(e) => set("fontSize", Number(e.target.value))}
         />
       </label>
       <div className="adminRangeRow">
         <label>
-          Horizontal <b>{style.x}</b>
+          Horizontal <b>{shown.x}</b>
           <input
             type="range"
             min="-120"
             max="120"
-            value={style.x}
+            value={shown.x}
             onChange={(e) => set("x", Number(e.target.value))}
           />
         </label>
         <label>
-          Vertical <b>{style.y}</b>
+          Vertical <b>{shown.y}</b>
           <input
             type="range"
             min="-120"
             max="120"
-            value={style.y}
+            value={shown.y}
             onChange={(e) => set("y", Number(e.target.value))}
           />
         </label>
@@ -118,7 +137,7 @@ function TextControl({
       <label>
         Alinhamento
         <select
-          value={style.align}
+          value={shown.align}
           onChange={(e) => set("align", e.target.value as TextStyle["align"])}
         >
           <option value="left">Esquerda</option>
@@ -126,6 +145,15 @@ function TextControl({
           <option value="right">Direita</option>
         </select>
       </label>
+      {allowColor && (
+        <label>
+          Cor do texto
+          <input aria-label={label + " — cor do texto"} type="color" value={shown.color || "#ffffff"} onChange={(e) => set("color", e.target.value)} />
+        </label>
+      )}
+      {mobileMode && style.mobile && (
+        <button type="button" onClick={() => onStyle({ ...style, mobile: undefined })}>Restaurar estilo automático do celular</button>
+      )}
     </div>
   );
 }
@@ -1397,6 +1425,10 @@ export default function AdminEditor() {
                     label="Nome / marca"
                     value={config.brand.wordmark}
                     style={config.brand.wordmarkStyle}
+                    mode={previewMode}
+                    enableMobile
+                    mobileFontFallback={28}
+                    allowColor
                     onValue={(value) => setBrand({ wordmark: value })}
                     onStyle={(wordmarkStyle) => setBrand({ wordmarkStyle })}
                   />
@@ -1413,6 +1445,25 @@ export default function AdminEditor() {
 
               {tab === "hero" && (
                 <>
+                  <div className="adminCard">
+                    <strong>Personalização da capa por dispositivo</strong>
+                    <p className="adminHint">
+                      Use Desktop ou Celular no canto da prévia. Os controles de tipografia
+                      abaixo mudam somente a versão selecionada, sem alterar a outra.
+                      Para editar a foto, use o quadro de mídia ao final.
+                    </p>
+                  </div>
+                  <TextControl
+                    label="Nome da marca sobre a capa"
+                    value={config.brand.wordmark}
+                    style={config.brand.wordmarkStyle}
+                    mode={previewMode}
+                    enableMobile
+                    mobileFontFallback={28}
+                    allowColor
+                    onValue={(wordmark) => setBrand({ wordmark })}
+                    onStyle={(wordmarkStyle) => setBrand({ wordmarkStyle })}
+                  />
                   <div className="adminCard">
                     <strong>Matéria vinculada ao destaque</strong>
                     <p className="adminHint">
@@ -1443,6 +1494,10 @@ export default function AdminEditor() {
                     label="Chamada pequena"
                     value={h.hero.eyebrow}
                     style={h.hero.eyebrowStyle}
+                    mode={previewMode}
+                    enableMobile
+                    mobileFontFallback={11}
+                    allowColor
                     onValue={(eyebrow) => setHome("hero", { eyebrow })}
                     onStyle={(eyebrowStyle) =>
                       setHome("hero", { eyebrowStyle })
@@ -1452,6 +1507,10 @@ export default function AdminEditor() {
                     label="Título principal"
                     value={h.hero.title}
                     style={h.hero.titleStyle}
+                    mode={previewMode}
+                    enableMobile
+                    mobileFontFallback={31}
+                    allowColor
                     multiline
                     onValue={(title) => setHome("hero", { title })}
                     onStyle={(titleStyle) => setHome("hero", { titleStyle })}
@@ -1460,19 +1519,33 @@ export default function AdminEditor() {
                     label="Resumo"
                     value={h.hero.dek}
                     style={h.hero.dekStyle}
+                    mode={previewMode}
+                    enableMobile
+                    mobileFontFallback={15}
+                    allowColor
                     multiline
                     onValue={(dek) => setHome("hero", { dek })}
                     onStyle={(dekStyle) => setHome("hero", { dekStyle })}
                   />
+                  <TextControl
+                    label="Texto do botão do destaque"
+                    value={h.hero.buttonText}
+                    style={h.hero.buttonStyle}
+                    mode={previewMode}
+                    enableMobile
+                    mobileFontFallback={11}
+                    allowColor
+                    onValue={(buttonText) => setHome("hero", { buttonText })}
+                    onStyle={(buttonStyle) => setHome("hero", { buttonStyle })}
+                  />
                   <div className="adminCard">
-                    <strong>Texto do link</strong>
-                    <input
-                      aria-label="Texto do link principal"
-                      value={h.hero.buttonText}
-                      onChange={(e) =>
-                        setHome("hero", { buttonText: e.target.value })
-                      }
-                    />
+                    <strong>Escurecimento sobre a imagem</strong>
+                    <p className="adminHint">Regula o degradê que mantém os textos legíveis, sem alterar o arquivo original.</p>
+                    <label>Intensidade do degradê <b>{h.hero.overlayOpacity}%</b>
+                      <input aria-label="Intensidade do degradê" type="range" min="0" max="100"
+                        value={h.hero.overlayOpacity}
+                        onChange={(e) => setHome("hero", { overlayOpacity: Number(e.target.value) })} />
+                    </label>
                   </div>
                   <p className="adminHint">
                     <strong>Fundo da página inicial — independente da matéria:</strong>{" "}
@@ -1485,6 +1558,8 @@ export default function AdminEditor() {
                     label="Foto ou vídeo de abertura (MP4/WebM, até 30 MB)"
                     asset={h.hero.media}
                     password={password}
+                    responsive
+                    mode={previewMode}
                     onChange={(media) => setHome("hero", { media })}
                   />
                   <p className="adminHint">
