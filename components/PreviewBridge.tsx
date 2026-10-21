@@ -18,6 +18,21 @@ function applyStyle(element: HTMLElement, style?: TextStyle) {
   element.style.fontSize = `${style.fontSize}px`;
   element.style.transform = `translate(${style.x}px, ${style.y}px)`;
   element.style.textAlign = style.align;
+  element.style.color = style.color || "";
+  if (style.mobile) {
+    element.setAttribute("data-mobile-text", "");
+    element.style.setProperty("--editor-mobile-font-size", `${style.mobile.fontSize}px`);
+    element.style.setProperty("--editor-mobile-x", `${style.mobile.x}px`);
+    element.style.setProperty("--editor-mobile-y", `${style.mobile.y}px`);
+    element.style.setProperty("--editor-mobile-align", style.mobile.align);
+    element.style.setProperty("--editor-mobile-color", style.mobile.color || style.color || "#ffffff");
+  } else {
+    element.removeAttribute("data-mobile-text");
+    for (const name of [
+      "--editor-mobile-font-size", "--editor-mobile-x", "--editor-mobile-y",
+      "--editor-mobile-align", "--editor-mobile-color",
+    ]) element.style.removeProperty(name);
+  }
 }
 
 function applyText(key: string, value: string, style?: TextStyle) {
@@ -37,44 +52,87 @@ function applyMedia(key: string, asset: MediaAsset) {
   document
     .querySelectorAll<HTMLElement>(`[data-editor-media="${key}"]`)
     .forEach((holder) => {
+      // The saved mobile controls are authoritative only when explicitly set.
+      if (asset.mobile) {
+        holder.dataset.mobileMedia = "1";
+        if (asset.mobile.fit === "cover") holder.dataset.mobileCrop = "1";
+        else delete holder.dataset.mobileCrop;
+      } else {
+        delete holder.dataset.mobileMedia;
+        delete holder.dataset.mobileCrop;
+      }
+      holder.style.setProperty("--mobile-x", `${asset.mobile?.positionX ?? asset.positionX}%`);
+      holder.style.setProperty("--mobile-y", `${asset.mobile?.positionY ?? asset.positionY}%`);
+      holder.style.setProperty("--mobile-fit", asset.mobile?.fit ?? "contain");
+      holder.style.setProperty("--mobile-zoom", String((asset.mobile?.zoom ?? 100) / 100));
+      holder.style.setProperty("--mobile-opacity", String((asset.mobile?.opacity ?? asset.opacity) / 100));
+
       if (!asset.url) return;
-
       const isVideo = /\.(mp4|webm)(\?|$)/i.test(asset.url);
-      let media = holder.querySelector("img, video") as
-        | HTMLImageElement
-        | HTMLVideoElement
-        | null;
+      const isHero = key === "home.hero.media";
 
-      if (
-        !media ||
-        (isVideo && media.tagName !== "VIDEO") ||
-        (!isVideo && media.tagName !== "IMG")
-      ) {
-        media = document.createElement(isVideo ? "video" : "img") as
-          | HTMLImageElement
-          | HTMLVideoElement;
+      const updateElement = (media: HTMLImageElement | HTMLVideoElement, src: string) => {
+        if (media.src !== new URL(src, window.location.href).href) media.src = src;
+        media.style.width = "100%";
+        media.style.height = "100%";
+        media.style.objectFit = asset.fit;
+        media.style.objectPosition = `${asset.positionX}% ${asset.positionY}%`;
+        media.style.transform = `scale(${asset.zoom / 100})`;
+        media.style.opacity = String(asset.opacity / 100);
+        media.style.display = "block";
+        media.style.maxWidth = "none";
+      };
+
+      if (isHero && isVideo) {
+        let wrapper = holder.querySelector<HTMLElement>(".cinematicMedia");
+        if (!wrapper) {
+          wrapper = document.createElement("div");
+          wrapper.className = "cinematicMedia";
+          holder.replaceChildren(wrapper);
+        }
+        let still = wrapper.querySelector<HTMLImageElement>(".cinematicStill");
+        if (!still) {
+          still = document.createElement("img");
+          still.className = "cinematicStill";
+          still.alt = "";
+          still.setAttribute("aria-hidden", "true");
+          wrapper.prepend(still);
+        }
+        updateElement(still, asset.poster || "/images/leticia-hero.jpg");
+        const allowMotion = !window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
+          !(navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+        let video = wrapper.querySelector<HTMLVideoElement>(".cinematicVideo");
+        if (!allowMotion) {
+          video?.remove();
+        } else {
+          if (!video) {
+            video = document.createElement("video");
+            video.className = "cinematicVideo";
+            video.autoplay = true;
+            video.muted = true;
+            video.loop = true;
+            video.playsInline = true;
+            video.preload = "metadata";
+            video.setAttribute("aria-hidden", "true");
+            video.tabIndex = -1;
+            wrapper.append(video);
+          }
+          updateElement(video, asset.url);
+          video.poster = asset.poster || "/images/leticia-hero.jpg";
+          void video.play().catch(() => undefined);
+        }
+        return;
+      }
+
+      let media = holder.querySelector("img.sharedMedia") as HTMLImageElement | null;
+      if (!media || holder.querySelector(".cinematicMedia")) {
+        media = document.createElement("img");
+        media.className = "sharedMedia";
         holder.replaceChildren(media);
       }
-
-      media.src = asset.url;
-      media.style.width = "100%";
-      media.style.height = "100%";
-      media.style.objectFit = asset.fit;
-      media.classList.add("sharedMedia");
-      holder.style.setProperty("--mobile-fit", asset.mobile?.fit ?? "contain");
-      media.style.objectPosition = `${asset.positionX}% ${asset.positionY}%`;
-      media.style.transform = `scale(${asset.zoom / 100})`;
-      media.style.opacity = String(asset.opacity / 100);
-      media.style.display = "block";
-      media.style.maxWidth = "none";
-
-      if (media instanceof HTMLVideoElement) {
-        media.autoplay = true;
-        media.muted = true;
-        media.loop = true;
-        media.playsInline = true;
-        void media.play().catch(() => undefined);
-      }
+      // Responsive image srcset is tied to the previous URL; remove it in the preview.
+      media.removeAttribute("srcset");
+      updateElement(media, asset.url);
     });
 }
 
@@ -128,7 +186,10 @@ function applyConfig(config: SiteConfig) {
     config.home.hero.titleStyle,
   );
   applyText("home.hero.dek", config.home.hero.dek, config.home.hero.dekStyle);
-  applyText("home.hero.buttonText", config.home.hero.buttonText);
+  applyText("home.hero.buttonText", config.home.hero.buttonText, config.home.hero.buttonStyle);
+  document.querySelector<HTMLElement>(".homeEditorial .leadMain")?.style.setProperty(
+    "--hero-overlay-opacity", String(config.home.hero.overlayOpacity / 100),
+  );
   applyMedia("home.hero.media", config.home.hero.media);
 
   applyText(
