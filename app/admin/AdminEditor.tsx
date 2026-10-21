@@ -46,6 +46,7 @@ function TextControl({
   enableMobile = false,
   mobileFontFallback = 30,
   allowColor = false,
+  colorLabel = "Escolher cor do texto",
 }: {
   label: string;
   value: string;
@@ -57,6 +58,7 @@ function TextControl({
   enableMobile?: boolean;
   mobileFontFallback?: number;
   allowColor?: boolean;
+  colorLabel?: string;
 }) {
   const mobileMode = enableMobile && mode === "mobile";
   const mobile = style.mobile ?? {
@@ -148,7 +150,7 @@ function TextControl({
       {allowColor && (
         <label>
           Cor do texto
-          <input aria-label={"Cor do texto — " + label} type="color" value={shown.color || "#ffffff"} onChange={(e) => set("color", e.target.value)} />
+          <input aria-label={colorLabel} type="color" value={shown.color || "#ffffff"} onChange={(e) => set("color", e.target.value)} />
         </label>
       )}
       {mobileMode && style.mobile && (
@@ -1429,6 +1431,7 @@ export default function AdminEditor() {
                     enableMobile
                     mobileFontFallback={28}
                     allowColor
+                    colorLabel="Cor da marca"
                     onValue={(value) => setBrand({ wordmark: value })}
                     onStyle={(wordmarkStyle) => setBrand({ wordmarkStyle })}
                   />
@@ -1461,6 +1464,7 @@ export default function AdminEditor() {
                     enableMobile
                     mobileFontFallback={28}
                     allowColor
+                    colorLabel="Cor da marca"
                     onValue={(wordmark) => setBrand({ wordmark })}
                     onStyle={(wordmarkStyle) => setBrand({ wordmarkStyle })}
                   />
@@ -1498,6 +1502,7 @@ export default function AdminEditor() {
                     enableMobile
                     mobileFontFallback={11}
                     allowColor
+                    colorLabel="Cor da chamada"
                     onValue={(eyebrow) => setHome("hero", { eyebrow })}
                     onStyle={(eyebrowStyle) =>
                       setHome("hero", { eyebrowStyle })
@@ -1511,6 +1516,7 @@ export default function AdminEditor() {
                     enableMobile
                     mobileFontFallback={31}
                     allowColor
+                    colorLabel="Cor da manchete"
                     multiline
                     onValue={(title) => setHome("hero", { title })}
                     onStyle={(titleStyle) => setHome("hero", { titleStyle })}
@@ -1523,6 +1529,7 @@ export default function AdminEditor() {
                     enableMobile
                     mobileFontFallback={15}
                     allowColor
+                    colorLabel="Cor do resumo"
                     multiline
                     onValue={(dek) => setHome("hero", { dek })}
                     onStyle={(dekStyle) => setHome("hero", { dekStyle })}
@@ -1535,6 +1542,7 @@ export default function AdminEditor() {
                     enableMobile
                     mobileFontFallback={11}
                     allowColor
+                    colorLabel="Cor do botão"
                     onValue={(buttonText) => setHome("hero", { buttonText })}
                     onStyle={(buttonStyle) => setHome("hero", { buttonStyle })}
                   />
