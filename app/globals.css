@@ -533,7 +533,11 @@ a {
   margin: 22px 0;
 }
 .article > .visual {
-  min-height: 650px;
+  /* Retrato editorial: fotos de corpo inteiro cabem sem corte. */
+  min-height: 0;
+  width: min(100%, 560px);
+  aspect-ratio: 2 / 3;
+  margin-inline: auto;
 }
 .articleBody {
   max-width: 720px;
@@ -1712,9 +1716,10 @@ a {
   overflow-wrap: break-word;
 }
 .articleAccessoryImage {
-  margin: 28px 0 0;
+  margin: 28px auto 0;
   position: relative;
-  aspect-ratio: 3/2;
+  width: min(100%, 440px);
+  aspect-ratio: 2 / 3;
   background: var(--blush);
   overflow: hidden;
 }
@@ -1722,7 +1727,9 @@ a {
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: cover;
+  /* Preserva a foto inteira, inclusive os pés, mesmo se o original for 9:16. */
+  object-fit: contain;
+  transform: none;
   max-width: none;
 }
 .adminArticleSections {
@@ -1796,7 +1803,7 @@ a {
   }
   .articleAccessoryImage {
     margin-top: 20px;
-    aspect-ratio: 4/3;
+    aspect-ratio: 2 / 3;
   }
 }
 
@@ -2018,7 +2025,11 @@ summary:focus-visible {
 }
 .article > .mediaVisual {
   min-height: 0;
-  aspect-ratio: 3/2;
+  aspect-ratio: 2 / 3;
+}
+.article > .mediaVisual > img.sharedMedia {
+  object-fit: contain;
+  transform: none;
 }
 .about .mediaVisual,
 .ugcHero .mediaVisual {
